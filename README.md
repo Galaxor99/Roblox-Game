@@ -7,6 +7,7 @@ This repository contains the development source. **No new Roblox Studio build ha
 ## Current milestone
 
 - 204 configurable cards: 36 originals and 168 fictional identities across 30 franchises.
+- Original card descriptions and realm guides explain the Fracture story; every card has collection text.
 - Three earnable-currency packs, six rarities, per-pack Legendary+ pity, exact per-card odds, and summon reveal panels.
 - Normal, Shiny, Corrupted, Awakened and Celestial variants; higher variants increase effective card power. Variant and rarity are independent.
 - Collection search, rarity filters, owned-only view, pagination, and a mobile-oriented scrolling interface.

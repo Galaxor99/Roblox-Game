@@ -17,6 +17,7 @@ test('roster stable identities and valid rarity pools',function()
   assert(table.find(Config.Rarities,c.Rarity));assert(Config.Factions[c.Faction])
   assert(c.Power>0 and c.Speed>0 and c.Energy>0 and c.Defense>0)
   assert(c.Identity and c.Identity.DisplayName==c.Name)
+  assert(type(c.Lore)=='string' and #c.Lore>20)
   if c.Universe then fiction+=1 else originals+=1 end
  end
  assert(originals==36,originals);assert(fiction>=150,fiction)

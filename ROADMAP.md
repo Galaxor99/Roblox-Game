@@ -9,12 +9,12 @@ Status means **implemented in source**, not Roblox playtested or released. Nothi
 | Milestone | Status | Acceptance and remaining work |
 | --- | --- | --- |
 | Import supplied foundation | Implemented | Summons, existing collection, potions, luck, expeditions and favourites preserved in source. |
-| Configurable roster expansion | Implemented | 204 definitions, 30 franchise groups, stable IDs, identity overrides, summon eligibility metadata. No custom franchise art/models. |
+| Configurable roster expansion | Implemented | 204 definitions, 30 franchise groups, stable IDs, identity overrides, summon eligibility metadata and collection descriptions. No custom franchise art/models. |
 | Summons and variants | Implemented | Six rarities, pity, normalized odds, 5 variant tiers; variant boundaries covered exhaustively. Reveal UI needs Studio review. |
 | Collection interface | Implemented; engine review pending | Search name/universe/faction/trait, owned filter, rarity filter, 12 cards/page, close/reopen, small-screen layouts. |
 | Team building | Implemented and rule-tested | Manual five unique allies or auto-best team, four factions, 5%/15% synergy. |
 | Card advancement | Implemented and rule-tested | 100 levels, duplicate upgrades/recycling, variant preservation, last-copy protection, mastery ranks and deliberate awakening. Individual card serials remain future work. |
-| World progression | Implemented; engine review pending | Sanctuary, Neon Citadel, Astral Expanse; raised floors, themed geometry, gates, nine memory sites and three story chapters. Final art and terrain remain future work. |
+| World progression | Implemented; engine review pending | Sanctuary, Neon Citadel, Astral Expanse; raised floors, themed geometry, realm guides, gates, nine memory sites and three story chapters. Final art and terrain remain future work. |
 | Stat-based challenges | Implemented and rule-tested | Three routes per offline expedition, useful traits, speed shortening, three bosses favoring defense/speed/energy, hidden results until claim. Random encounter tables remain future work. |
 | Quests and collection goals | Implemented and rule-tested | Three guaranteed-card quests, seven achievements, four collection sets with luck bonuses. |
 | Daily rewards | Implemented and rule-tested | Once per UTC day, 7-day reward cycle, resets after missed day. |

@@ -137,6 +137,7 @@ render=function(reset)
     heading((count>0 and c.Name or 'Undiscovered: '..c.Name)..' • '..c.Rarity)
     local effect=Config.TraitEffects[c.Trait]
     text((c.Universe or 'Anime Nexus')..' • '..Config.Factions[c.Faction or 'Rift']..' • '..c.Trait..' (+'..math.floor(effect.ChanceBonus*100)..'% '..effect.Route..' route) • owned '..count..' • level '..(state.Progression.Levels[id] or 1)..' / '..Config.CardMaxLevel,68,c.Color)
+    text(c.Lore or '',52,palette.muted)
     if count>0 then
      text(string.format('PWR %d  SPD %d  DEF %d  ENERGY %d\nEffective expedition power: %d',c.Power,c.Speed,c.Defense,c.Energy,Rules.cardPower(state,id)),52)
      button(table.find(state.Favorites,id) and '★ REMOVE SHOWCASE FOLLOWER' or '☆ SHOWCASE FOLLOWER',function()action('Favorite',id)end)

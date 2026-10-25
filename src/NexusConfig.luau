@@ -100,6 +100,45 @@ end
 for id,card in pairs(C.Cards) do
  card.Identity={DisplayName=card.Name,ModelName=id,PortraitAssetId=0,LicenseStatus="Original",PublicEligible=true}
 end
+C.CardLore={
+ recruit="The first volunteer to map the broken gates. Steady hands make dangerous routes feel possible.",
+ spark="A courier who once crossed the Sanctuary in a heartbeat. Swift teams reach their destination sooner.",
+ sentinel="An old city defender rebuilt to shelter Riftwalkers from the unknown.",
+ ember="A wandering blade who follows the glow of unstable gateways.",
+ frost="Guardian of the northern archives, where frozen memories remain intact.",
+ thunder="A restless Vanguard who turns the Citadel's storm into a path forward.",
+ eclipse="An oathbound knight searching for the moment the sky went dark.",
+ comet="A pilot who reads star trails as maps through broken realities.",
+ sovereign="Commander of a vanished host, remembered by the shadows it left behind.",
+ oracle="A keeper of future fragments who sees several endings at once.",
+ astral="The last monarch to hear the original signal from beyond the Fracture.",
+ tide="A patient apprentice who listens to the currents flowing between realms.",
+ scout="A rooftop runner who knows every hidden approach to the Neon Citadel.",
+ warden="The grove's quiet protector, rooted beside its oldest memory.",
+ gunslinger="An explorer who keeps one bright flare for the darkest rift.",
+ phantom="A messenger who slips through the static before a signal fades.",
+ witch="A prism scholar who splits a single clue into many possible truths.",
+ titan="A living shelter grown where the Sanctuary's defenses failed.",
+ captain="A solar navigator charting courses through impossible skies.",
+ archon="The Citadel's forgotten engine given will and purpose.",
+ seraph="A dawn watcher who promises that lost worlds can bloom again.",
+ weaver="An artisan of uncertain fates, collecting the threads between memories.",
+ leviathan="A vast traveler sleeping beneath the light of the Astral Expanse.",
+ velocity="A messenger who treats every second as a door to another path.",
+ aegis="A maker of protective devices for journeys no map can predict.",
+ blade="A quiet duelist who learns more from a pause than from a strike.",
+ dune="A survivor who crossed the silent wastes after the first fracture.",
+ ocean="A ruler who guards the tides that connect scattered shores.",
+ raven="A strategist tracing the pattern hidden in the Citadel's blackouts.",
+ sunforge="A shield bearer forged in the last warm light of a dying world.",
+ dream="A cartographer drawing routes remembered only in sleep.",
+ moss="A small spirit proving that even a broken realm can regrow.",
+ ghost="A guide who follows the faint signals of lost travelers.",
+ crown="A paradox given form at the edge of every possible ending.",
+ lunar="A patient tracker who reads the night for traces of the Rift.",
+ atlas="A walking citadel built to carry a city's last hope.",
+}
+for id,lore in pairs(C.CardLore) do C.Cards[id].Lore=lore end
 C.WorldOrder={"hub","neon","astral"}
 C.Worlds={
  hub={Name="Nexus Sanctuary",Completed=0,Cost=0,Color=Color3.fromRGB(90,150,210)},

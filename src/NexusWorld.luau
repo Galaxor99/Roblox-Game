@@ -63,6 +63,18 @@ function World.create(config,canVisit,notify,onDiscover)
   end
   local beacon=part('RealmBeacon',Vector3.new(5,13,5),center+Vector3.new(0,8,-18),def.Color,Enum.Material.Neon,realm)
   sign(beacon,def.Name..'\nTHE FRACTURE REMAINS')
+  local chapterId=id=='hub' and 'fracture' or id
+  local chapter=config.Chapters[chapterId]
+  local guideName=id=='hub' and 'Mira • Archivist' or (id=='neon' and 'Vex • Signal Keeper' or 'Orin • Echo Guide')
+  local guidePos=center+Vector3.new(-15,1,-14)
+  local guide=part('Guide',Vector3.new(3,5,2),guidePos+Vector3.new(0,2.5,0),def.Color,Enum.Material.SmoothPlastic,realm)
+  ornament(part('GuideHead',Vector3.new(2.6,2.6,2.6),guidePos+Vector3.new(0,6.2,0),Color3.fromRGB(225,205,190),Enum.Material.SmoothPlastic,realm)).Shape=Enum.PartType.Ball
+  ornament(part('GuideArmLeft',Vector3.new(.7,4,.8),guidePos+Vector3.new(-2,2.5,0),def.Color,Enum.Material.SmoothPlastic,realm))
+  ornament(part('GuideArmRight',Vector3.new(.7,4,.8),guidePos+Vector3.new(2,2.5,0),def.Color,Enum.Material.SmoothPlastic,realm))
+  sign(guide,guideName)
+  promptAt(guide,'Talk',guideName,function(player)
+   notify(player,chapter.Story)
+  end)
   local discoveryList=config.Discoveries[id]
   for index,memoryId in ipairs(discoveryList) do
    local angle=index*math.pi*2/3+.4
