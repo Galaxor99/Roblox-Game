@@ -46,7 +46,7 @@ function Roster.apply(config)
    local rarity=override.Rarity or rarities[(i+groupIndex-2)%#rarities+1]
    local base=bases[rarity];local tilt=((i*7+groupIndex*3)%9-4)/20
    local display=override.DisplayName or name
-   config.Cards[id]={Enabled=config.RosterMode=='Development' or eligible,Name=display,Rarity=rarity,Power=math.floor(base*(1+tilt)),Speed=math.floor(base*(1-tilt)),Defense=math.floor(base*.85),Energy=math.floor(base*1.1),Trait=traits[(i-1)%#traits+1],Faction=group.Faction,Universe=group.Universe,Color=config.RarityColors[rarity],Identity={DisplayName=display,CanonicalName=name,Universe=group.Universe,ModelAssetId=override.ModelAssetId or 0,PortraitAssetId=override.PortraitAssetId or 0,LicenseStatus=override.LicenseStatus or 'Unverified',PublicEligible=eligible}}
+   config.Cards[id]={Enabled=config.RosterMode=='Development' or eligible,Name=display,Rarity=rarity,Power=math.floor(base*(1+tilt)),Speed=math.floor(base*(1-tilt)),Defense=math.floor(base*.85),Energy=math.floor(base*1.1),Trait=traits[(i-1)%#traits+1],Faction=group.Faction,Universe=group.Universe,Color=config.RarityColors[rarity],Identity={DisplayName=display,CanonicalName=name,Universe=group.Universe,ModelName=override.ModelName or id,PortraitAssetId=override.PortraitAssetId or 0,LicenseStatus=override.LicenseStatus or 'Unverified',PublicEligible=eligible}}
   end
  end end
 end

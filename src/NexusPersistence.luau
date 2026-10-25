@@ -55,6 +55,32 @@ function Persistence.new(store,token,clock)
   if not ok or denied or not result then return nil,'Purchase outcome not confirmed' end
   return result
  end
+ function api.claimCoop(userId,payload,day,reward)
+  if not leases[userId] then return nil,'No active session' end
+  local key=tostring(day)
+  local denied=false
+  local ok,result=pcall(function()
+   return store:UpdateAsync('user_'..userId,function(old)
+    denied=false
+    if type(old)~='table' or type(old._Session)~='table' or old._Session.Token~=token then denied=true;return nil end
+    local previous=old.Progression and old.Progression.CoopClaims
+    if previous and previous[key] then return old end
+    local copy=table.clone(payload)
+    copy.Progression=table.clone(payload.Progression or {})
+    copy.Progression.CoopClaims=table.clone(copy.Progression.CoopClaims or {})
+    copy.Progression.CoopClaims[key]=true
+    copy.Coins=math.min(1000000000,(copy.Coins or 0)+reward.Coins)
+    copy.Essence=math.min(10000000,(copy.Essence or 0)+reward.Essence)
+    copy.Crystals=math.min(10000000,(copy.Crystals or 0)+reward.Crystals)
+    copy.Receipts=table.clone(payload.Receipts or {})
+    for id,value in pairs(old.Receipts or {}) do if value==true then copy.Receipts[id]=true end end
+    copy._Session={Token=token,Expires=clock()+180}
+    return copy
+   end)
+  end)
+  if not ok or denied or not result then return nil,'Shared reward could not be confirmed' end
+  return result
+ end
  return api
 end
 return Persistence

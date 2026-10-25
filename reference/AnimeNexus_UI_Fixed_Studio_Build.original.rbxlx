@@ -1,0 +1,686 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<roblox version="4">
+  <Meta name="ExplicitAutoJoints">true</Meta>
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Workspace" referent="RBX00000001">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="StreamingEnabled">false</bool>
+    </Properties>
+    <Item class="Part" referent="RBX00000002">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <Vector3 name="Size">
+          <X>300</X>
+          <Y>1</Y>
+          <Z>300</Z>
+        </Vector3>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.5</Y>
+          <Z>0</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">4280166467</Color3uint8>
+        <bool name="CanCollide">true</bool>
+      </Properties>
+    </Item>
+    <Item class="SpawnLocation" referent="RBX00000003">
+      <Properties>
+        <string name="Name">SpawnLocation</string>
+        <Vector3 name="Size">
+          <X>8</X>
+          <Y>1</Y>
+          <Z>8</Z>
+        </Vector3>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.5</Y>
+          <Z>0</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="Anchored">true</bool>
+        <bool name="Neutral">true</bool>
+        <bool name="CanCollide">true</bool>
+        <Color3uint8 name="Color3uint8">4282171070</Color3uint8>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="ReplicatedStorage" referent="RBX00000004">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="ModuleScript" referent="RBX00000005">
+      <Properties>
+        <string name="Name">NexusConfig</string>
+        <bool name="Disabled">false</bool>
+        <ProtectedString name="Source">local C = {}
+C.Version = 3
+C.Rarities = {"Common", "Rare", "Epic", "Legendary", "Mythic", "Celestial"}
+C.RarityColors = {Common=Color3.fromRGB(165,165,175), Rare=Color3.fromRGB(80,155,255), Epic=Color3.fromRGB(190,90,250), Legendary=Color3.fromRGB(255,186,45), Mythic=Color3.fromRGB(255,70,100), Celestial=Color3.fromRGB(80,240,240)}
+C.Cards = {
+  recruit={Name="Rift Recruit",Rarity="Common",Power=90,Speed=75,Defense=100,Energy=70,Trait="Reliable",Color=Color3.fromRGB(125,160,210)},
+  spark={Name="Spark Runner",Rarity="Common",Power=80,Speed=125,Defense=70,Energy=90,Trait="Swift",Color=Color3.fromRGB(80,205,250)},
+  sentinel={Name="Iron Sentinel",Rarity="Rare",Power=155,Speed=65,Defense=210,Energy=115,Trait="Guardian",Color=Color3.fromRGB(155,190,220)},
+  ember={Name="Ember Ronin",Rarity="Rare",Power=200,Speed=155,Defense=95,Energy=125,Trait="Blazing",Color=Color3.fromRGB(255,140,70)},
+  frost={Name="Frost Warden",Rarity="Epic",Power=290,Speed=180,Defense=260,Energy=210,Trait="Chill",Color=Color3.fromRGB(110,215,255)},
+  thunder={Name="Thunder Vanguard",Rarity="Epic",Power=340,Speed=350,Defense=165,Energy=275,Trait="Surge",Color=Color3.fromRGB(170,100,250)},
+  eclipse={Name="Eclipse Knight",Rarity="Legendary",Power=620,Speed=420,Defense=470,Energy=550,Trait="Eclipse",Color=Color3.fromRGB(180,90,235)},
+  comet={Name="Comet Drifter",Rarity="Legendary",Power=540,Speed=710,Defense=250,Energy=600,Trait="Momentum",Color=Color3.fromRGB(240,110,130)},
+  sovereign={Name="Shadow Sovereign",Rarity="Mythic",Power=1120,Speed=750,Defense=680,Energy=1270,Trait="Legion",Color=Color3.fromRGB(105,90,200)},
+  oracle={Name="Chrono Oracle",Rarity="Mythic",Power=850,Speed=1240,Defense=630,Energy=1380,Trait="Foresight",Color=Color3.fromRGB(90,220,220)},
+  astral={Name="Astral Monarch",Rarity="Celestial",Power=2250,Speed=1450,Defense=1700,Energy=2400,Trait="Transcendent",Color=Color3.fromRGB(240,215,100)},
+}
+-- Weights are percentages, total 100. Each pack has its own pool and pity threshold.
+C.Packs = {
+  basic={Name="Rift Pack",Price=100,Weights={Common=55,Rare=25,Epic=12,Legendary=6,Mythic=1.8,Celestial=0.2},Pity=30,Description="Balanced starter summons"},
+  elite={Name="Ascendant Pack",Price=350,Weights={Common=0,Rare=45,Epic=34,Legendary=16,Mythic=4.5,Celestial=0.5},Pity=18,Description="Rare or better guaranteed"},
+  cosmic={Name="Cosmic Pack",Price=1000,Weights={Common=0,Rare=0,Epic=55,Legendary=30,Mythic=13,Celestial=2},Pity=10,Description="Epic or better guaranteed"},
+}
+C.Expeditions = {
+  scouting={Name="Rift Scouting",Duration=30,RequiredPower=250,Reward=125,Unlock=0},
+  citadel={Name="Broken Citadel",Duration=90,RequiredPower=1250,Reward=450,Unlock=5},
+  abyss={Name="Astral Abyss",Duration=180,RequiredPower=4000,Reward=1400,Unlock=15},
+}
+-- Increasing permanent luck costs and expedition milestones.
+C.LuckUpgradeCosts={1000,2500,5000,9000,15000,24000,37000,55000,80000,120000}
+C.LuckExpeditionRequirements={2,5,10,18,30,45,65,90,125,170}
+C.LuckCost = 1000 -- legacy compatibility
+C.LuckMaxLevel = 10
+C.LuckBonusPerLevel = 0.08 -- multiplies Epic+ weights; automatically renormalised
+C.FreeStarterCoins = 600
+C.Monetization={
+ LuckPassId=0, -- Add an actual GAME PASS ID after creating it in Creator Hub.
+ PotionProductIds={minor=0,major=0}, -- Actual DEVELOPER PRODUCT IDs.
+}
+C.Potions={
+ minor={Name="Lucky Draught",Bonus=0.25,Duration=600,Ingredients={Essence=8,Crystals=2}},
+ major={Name="Astral Elixir",Bonus=0.75,Duration=900,Ingredients={Essence=24,Crystals=8}},
+}
+-- Luck factors multiply Epic+ rarity weights (not guaranteed probabilities).
+-- 2x Game Pass doubles the entire base-plus-permanent-plus-potion boost factor.
+-- Boosts do not stack with themselves; strongest potion wins.
+
+return C
+</ProtectedString>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="RBX00000006">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="RBX00000007">
+      <Properties>
+        <string name="Name">NexusServer</string>
+        <bool name="Disabled">false</bool>
+        <ProtectedString name="Source">-- Anime Nexus Hybrid MVP. All rolls, progression and rewards are SERVER authoritative.
+local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local DataStoreService=game:GetService("DataStoreService")
+local RunService=game:GetService("RunService")
+local MarketplaceService=game:GetService("MarketplaceService")
+local PolicyService=game:GetService("PolicyService")
+local Config=require(ReplicatedStorage:WaitForChild("NexusConfig"))
+local store=DataStoreService:GetDataStore("AnimeNexusHybrid_v2")
+local rng=Random.new()
+local folder=Instance.new("Folder");folder.Name="NexusRemotes";folder.Parent=ReplicatedStorage
+local function remote(name,kind)
+ local r=Instance.new(kind);r.Name=name;r.Parent=folder;return r
+end
+local Request=remote("Request","RemoteFunction")
+local Updated=remote("Updated","RemoteEvent")
+local Notify=remote("Notify","RemoteEvent")
+local profiles={};local throttles={};local displays={};local busy={}
+local policyRestricted={}; local passOwners={}
+local function refreshEntitlements(player)
+ local allowed=false
+ local ok,pol=pcall(function()return PolicyService:GetPolicyInfoForPlayerAsync(player)end)
+ -- Fail closed if policy lookup fails.
+ if ok and type(pol)=="table" then allowed=pol.ArePaidRandomItemsRestricted==false end
+ policyRestricted[player]=not allowed
+ local passId=Config.Monetization.LuckPassId
+ local owns=false
+ if passId&gt;0 and allowed then
+  local good,result=pcall(function()return MarketplaceService:UserOwnsGamePassAsync(player.UserId,passId)end)
+  owns=good and result==true
+ end
+ passOwners[player]=owns
+end
+local function luckFactor(p,player)
+ local potion=p.ActivePotion
+ local bonus=(potion and potion.EndsAt&gt;os.time() and Config.Potions[potion.Id].Bonus) or 0
+ local f=1+p.Luck*Config.LuckBonusPerLevel+bonus
+ return f*(passOwners[player] and 2 or 1)
+end
+local function packOdds(pack,p,player)
+ local factor=luckFactor(p,player)
+ local w={};local sum=0
+ for _,r in ipairs(Config.Rarities) do
+  local high=(r=="Epic" or r=="Legendary" or r=="Mythic" or r=="Celestial")
+  w[r]=(pack.Weights[r] or 0)*(high and factor or 1);sum+=w[r]
+ end
+ for r,v in pairs(w) do w[r]=(v/sum)*100 end
+ return w
+end
+local function defaultProfile()
+ return {Coins=Config.FreeStarterCoins,Luck=0,Collection={recruit=1},Favorites={"recruit"},Pity={},Expedition=nil,Completed=0,Rolls=0,Essence=0,Crystals=0,Potions={},ActivePotion=nil,Receipts={}}
+end
+local function sanitize(raw)
+ local p=defaultProfile()
+ if type(raw)~="table" then return p end
+ p.Coins=math.clamp(math.floor(tonumber(raw.Coins) or p.Coins),0,1000000000)
+ p.Luck=math.clamp(math.floor(tonumber(raw.Luck) or 0),0,Config.LuckMaxLevel)
+ p.Essence=math.clamp(math.floor(tonumber(raw.Essence) or 0),0,10000000)
+ p.Crystals=math.clamp(math.floor(tonumber(raw.Crystals) or 0),0,10000000)
+ p.Potions={}
+ if type(raw.Potions)=="table" then for id in pairs(Config.Potions) do p.Potions[id]=math.clamp(math.floor(tonumber(raw.Potions[id]) or 0),0,100000) end end
+ if type(raw.ActivePotion)=="table" and Config.Potions[raw.ActivePotion.Id] then
+  local a=raw.ActivePotion
+  if type(a.EndsAt)=="number" then p.ActivePotion={Id=a.Id,EndsAt=math.floor(a.EndsAt)} end
+ end
+ p.Receipts={}
+ if type(raw.Receipts)=="table" then for k,v in pairs(raw.Receipts) do if type(k)=="string" and v==true then p.Receipts[k]=true end end end
+ p.Completed=math.clamp(math.floor(tonumber(raw.Completed) or 0),0,1000000)
+ p.Rolls=math.clamp(math.floor(tonumber(raw.Rolls) or 0),0,100000000)
+ p.Collection={}
+ if type(raw.Collection)=="table" then for id,count in pairs(raw.Collection) do
+  if Config.Cards[id] and type(count)=="number" then p.Collection[id]=math.clamp(math.floor(count),0,100000) end
+ end end
+ if not next(p.Collection) then p.Collection.recruit=1 end
+ p.Favorites={}
+ if type(raw.Favorites)=="table" then local seen={};for _,id in ipairs(raw.Favorites) do
+  if #p.Favorites&gt;=3 then break end
+  if Config.Cards[id] and (p.Collection[id] or 0)&gt;0 and not seen[id] then table.insert(p.Favorites,id);seen[id]=true end
+ end end
+ p.Pity={}
+ if type(raw.Pity)=="table" then for id in pairs(Config.Packs) do p.Pity[id]=math.clamp(math.floor(tonumber(raw.Pity[id]) or 0),0,10000) end end
+ if type(raw.Expedition)=="table" and Config.Expeditions[raw.Expedition.Id] then
+  local e=raw.Expedition
+  if type(e.EndsAt)=="number" and type(e.Success)=="boolean" then
+   p.Expedition={Id=e.Id,EndsAt=math.floor(e.EndsAt),Success=e.Success}
+  end
+ end
+ return p
+end
+local function public(p,player)
+ return {Coins=p.Coins,Luck=p.Luck,Collection=table.clone(p.Collection),Favorites=table.clone(p.Favorites),Pity=table.clone(p.Pity),Expedition=p.Expedition and table.clone(p.Expedition) or nil,Completed=p.Completed,Rolls=p.Rolls,Essence=p.Essence,Crystals=p.Crystals,Potions=table.clone(p.Potions),ActivePotion=p.ActivePotion and table.clone(p.ActivePotion) or nil,HasLuckPass=player and passOwners[player] or false,PaidLuckAvailable=player and not policyRestricted[player] or false,Odds=player and {basic=packOdds(Config.Packs.basic,p,player),elite=packOdds(Config.Packs.elite,p,player),cosmic=packOdds(Config.Packs.cosmic,p,player)} or {}}
+end
+local function push(player)
+ local p=profiles[player];if p then Updated:FireClient(player,public(p,player)) end
+end
+local function message(player,s) Notify:FireClient(player,s) end
+local function teamPower(p)
+ local values={}
+ for id,n in pairs(p.Collection) do if n&gt;0 then
+  local c=Config.Cards[id]
+  table.insert(values,c.Power+c.Speed*0.35+c.Defense*0.35+c.Energy*0.3)
+ end end
+ table.sort(values,function(a,b)return a&gt;b end)
+ local total=0;for i=1,math.min(#values,5) do total+=values[i] end
+ return math.floor(total)
+end
+local function luckWeights(pack,p,player)
+ local w={};local sum=0;local factor=luckFactor(p,player)
+ for r,v in pairs(pack.Weights) do
+  local high=(r=="Epic" or r=="Legendary" or r=="Mythic" or r=="Celestial")
+  local adjusted=v*(high and factor or 1)
+  w[r]=adjusted;sum+=adjusted
+ end
+ return w,sum
+end
+local function roll(p,packId,player)
+ local pack=Config.Packs[packId]
+ local pity=p.Pity[packId] or 0
+ local rarity
+ if pity+1&gt;=pack.Pity then
+  local better={};for _,r in ipairs({"Legendary","Mythic","Celestial"}) do if (pack.Weights[r] or 0)&gt;0 then table.insert(better,r) end end
+  rarity=better[rng:NextInteger(1,#better)] -- guaranteed Legendary+ on pity
+ else
+  local weights,sum=luckWeights(pack,p,player)
+  local pick=rng:NextNumber(0,sum);local cumulative=0
+  for _,r in ipairs(Config.Rarities) do cumulative+=weights[r] or 0;if pick&lt;=cumulative then rarity=r;break end end
+  rarity=rarity or "Common"
+ end
+ local candidates={};for id,c in pairs(Config.Cards) do if c.Rarity==rarity then table.insert(candidates,id) end end
+ table.sort(candidates)
+ local id=candidates[rng:NextInteger(1,#candidates)]
+ p.Pity[packId]=(rarity=="Legendary" or rarity=="Mythic" or rarity=="Celestial") and 0 or pity+1
+ return id,rarity
+end
+local function removeDisplay(player)
+ if displays[player] then displays[player]:Destroy();displays[player]=nil end
+end
+local function displayModel(id,index)
+ local card=Config.Cards[id];local m=Instance.new("Model");m.Name=id
+ local root=Instance.new("Part");root.Name="HumanoidRootPart";root.Size=Vector3.new(1,1,1);root.Transparency=1;root.Anchored=true;root.CanCollide=false;root.Parent=m;m.PrimaryPart=root
+ local function part(n,size,pos,color,shape)
+  local x=Instance.new("Part");x.Name=n;x.Size=size;x.CFrame=CFrame.new(pos);x.Color=color;x.Material=Enum.Material.Neon;x.Anchored=true;x.CanCollide=false;x.CanTouch=false;x.CanQuery=false
+  if shape then x.Shape=shape end;x.Parent=m;return x
+ end
+ part("Body",Vector3.new(1.5,2,0.75),Vector3.new(0,1.8,0),card.Color)
+ part("Head",Vector3.new(1.05,1.05,1.05),Vector3.new(0,3.4,0),card.Color,Enum.PartType.Ball)
+ part("LeftArm",Vector3.new(.45,1.8,.55),Vector3.new(-1,1.8,0),card.Color)
+ part("RightArm",Vector3.new(.45,1.8,.55),Vector3.new(1,1.8,0),card.Color)
+ part("LeftLeg",Vector3.new(.55,1.6,.6),Vector3.new(-.45,.15,0),card.Color)
+ part("RightLeg",Vector3.new(.55,1.6,.6),Vector3.new(.45,.15,0),card.Color)
+ local bill=Instance.new("BillboardGui");bill.Name="NameTag";bill.Size=UDim2.fromOffset(190,50);bill.StudsOffset=Vector3.new(0,4.65,0);bill.AlwaysOnTop=true;bill.Parent=root
+ local label=Instance.new("TextLabel");label.Size=UDim2.fromScale(1,1);label.BackgroundTransparency=1;label.Text=card.Name.."\n"..card.Rarity;label.TextColor3=card.Color;label.TextStrokeTransparency=0;label.Font=Enum.Font.GothamBold;label.TextScaled=true;label.Parent=bill
+ return m
+end
+local function refreshDisplay(player)
+ removeDisplay(player)
+ local p=profiles[player];if not p or not player.Character then return end
+ local group=Instance.new("Folder");group.Name="NexusFavoriteDisplays";group.Parent=workspace;displays[player]=group
+ for i,id in ipairs(p.Favorites) do if Config.Cards[id] then
+  local m=displayModel(id,i);m.Parent=group
+  local v=Instance.new("ObjectValue");v.Name="Owner";v.Value=player;v.Parent=m
+  m:SetAttribute("Slot",i)
+ end end
+end
+RunService.Heartbeat:Connect(function()
+ for player,group in pairs(displays) do
+  local char=player.Character;local root=char and char:FindFirstChild("HumanoidRootPart")
+  if root and group.Parent then
+   for _,m in ipairs(group:GetChildren()) do
+    if m:IsA("Model") and m.PrimaryPart then
+     local slot=m:GetAttribute("Slot") or 1
+     local lateral=(slot-2)*3.0
+     if #group:GetChildren()==1 then lateral=0 end
+     local target=root.CFrame*CFrame.new(lateral,1.8,4.6)
+     m:PivotTo(m:GetPivot():Lerp(target,0.16))
+    end
+   end
+  end
+ end
+end)
+local function save(player)
+ local p=profiles[player];if not p then return end
+ local copy=public(p)
+ copy.Receipts=table.clone(p.Receipts)
+ for attempt=1,3 do
+  local ok,err=pcall(function()store:UpdateAsync("user_"..player.UserId,function()return copy end)end)
+  if ok then return end
+  warn("Anime Nexus save failed:",player.Name,err)
+  task.wait(attempt)
+ end
+end
+Players.PlayerAdded:Connect(function(player)
+ local data,ok
+ ok=pcall(function()data=store:GetAsync("user_"..player.UserId)end)
+ if not ok then
+  if RunService:IsStudio() then
+   warn("ANIME NEXUS: DataStore unavailable in Studio; using temporary unsaved test profile for",player.Name)
+   data=nil
+  else
+   warn("Data load failed for",player.Name,"- session will not permit changes")
+   player:Kick("Unable to load your saved collection. Please rejoin to avoid data loss.");return
+  end
+ end
+ profiles[player]=sanitize(data)
+ refreshEntitlements(player)
+ player.CharacterAdded:Connect(function() task.wait(1);refreshDisplay(player) end)
+ if player.Character then refreshDisplay(player) end
+ push(player)
+end)
+Players.PlayerRemoving:Connect(function(player)
+ save(player);removeDisplay(player);profiles[player]=nil;throttles[player]=nil;busy[player]=nil;policyRestricted[player]=nil;passOwners[player]=nil
+end)
+game:BindToClose(function()
+ for _,p in ipairs(Players:GetPlayers()) do task.spawn(save,p) end
+ task.wait(4)
+end)
+Request.OnServerInvoke=function(player,action,arg)
+ local p=profiles[player];if not p then return {Ok=false,Message="Profile loading"} end
+ local now=os.clock();local t=throttles[player] or 0
+ if now-t&lt;0.15 then return {Ok=false,Message="Please slow down"} end
+ throttles[player]=now
+ if busy[player] then return {Ok=false,Message="Request processing"} end
+ busy[player]=true
+ local ok,result=pcall(function()
+  if action=="Get" then return {Ok=true,Profile=public(p,player),TeamPower=teamPower(p)} end
+  if action=="Open" then
+   if type(arg)~="string" or not Config.Packs[arg] then return {Ok=false,Message="Invalid pack"} end
+   local pack=Config.Packs[arg]
+   if p.Coins&lt;pack.Price then return {Ok=false,Message="Not enough Rift Coins"} end
+   p.Coins-=pack.Price
+   local id,rarity=roll(p,arg,player);p.Collection[id]=(p.Collection[id] or 0)+1;p.Rolls+=1
+   push(player);return {Ok=true,Id=id,Rarity=rarity,Profile=public(p,player),TeamPower=teamPower(p)}
+  elseif action=="Favorite" then
+   if type(arg)~="string" or not Config.Cards[arg] or (p.Collection[arg] or 0)&lt;=0 then return {Ok=false,Message="Card not owned"} end
+   local at=table.find(p.Favorites,arg)
+   if at then table.remove(p.Favorites,at) elseif #p.Favorites&lt;3 then table.insert(p.Favorites,arg)
+   else return {Ok=false,Message="Maximum three favourites"} end
+   refreshDisplay(player);push(player);return {Ok=true,Profile=public(p,player)}
+  elseif action=="Luck" then
+   if p.Luck&gt;=Config.LuckMaxLevel then return {Ok=false,Message="Maximum luck reached"} end
+   local cost=Config.LuckUpgradeCosts[p.Luck+1]
+   local required=Config.LuckExpeditionRequirements[p.Luck+1]
+   if p.Completed&lt;required then return {Ok=false,Message="Complete "..required.." expeditions to unlock"} end
+   if p.Coins&lt;cost then return {Ok=false,Message="Need "..cost.." coins"} end
+   p.Coins-=cost;p.Luck+=1;push(player);return {Ok=true,Profile=public(p,player)}
+  elseif action=="CraftPotion" then
+   local def=type(arg)=="string" and Config.Potions[arg] or nil
+   if not def then return {Ok=false,Message="Unknown recipe"} end
+   if p.Essence&lt;def.Ingredients.Essence or p.Crystals&lt;def.Ingredients.Crystals then return {Ok=false,Message="Not enough crafting materials"} end
+   p.Essence-=def.Ingredients.Essence;p.Crystals-=def.Ingredients.Crystals
+   p.Potions[arg]=(p.Potions[arg] or 0)+1;push(player)
+   return {Ok=true,Profile=public(p,player),Message="Potion crafted"}
+  elseif action=="UsePotion" then
+   if type(arg)~="string" or not Config.Potions[arg] or (p.Potions[arg] or 0)&lt;1 then return {Ok=false,Message="Potion not owned"} end
+   if p.ActivePotion and p.ActivePotion.EndsAt&gt;os.time() then return {Ok=false,Message="A potion is already active"} end
+   p.Potions[arg]-=1;p.ActivePotion={Id=arg,EndsAt=os.time()+Config.Potions[arg].Duration}
+   push(player);return {Ok=true,Profile=public(p,player),Message="Potion activated"}
+  elseif action=="RefreshPass" then
+   refreshEntitlements(player);push(player)
+   return {Ok=true,Profile=public(p,player)}
+  elseif action=="StartExpedition" then
+   if type(arg)~="string" or not Config.Expeditions[arg] then return {Ok=false,Message="Invalid expedition"} end
+   if p.Expedition then return {Ok=false,Message="Finish current expedition first"} end
+   local e=Config.Expeditions[arg]
+   if p.Completed&lt;e.Unlock then return {Ok=false,Message="Complete "..e.Unlock.." expeditions to unlock"} end
+   local power=teamPower(p)
+   -- Underpowered teams may try but have lower success chances; 20% minimum.
+   local chance=math.clamp(power/e.RequiredPower,0.2,1)
+   p.Expedition={Id=arg,EndsAt=os.time()+e.Duration,Success=rng:NextNumber()&lt;chance}
+   push(player);return {Ok=true,Profile=public(p,player),Message="Expedition started"}
+  elseif action=="ClaimExpedition" then
+   local current=p.Expedition
+   if not current then return {Ok=false,Message="No active expedition"} end
+   if os.time()&lt;current.EndsAt then return {Ok=false,Message="Expedition not finished"} end
+   local e=Config.Expeditions[current.Id]
+   local reward=current.Success and e.Reward or math.floor(e.Reward*0.2)
+   p.Coins+=reward;p.Completed+=1;p.Expedition=nil
+   p.Essence+=current.Success and (e.Reward//65+1) or 1
+   p.Crystals+=current.Success and math.max(1,e.Reward//400) or 0
+   push(player);return {Ok=true,Profile=public(p,player),Message=(current.Success and "Success! +" or "Partial rewards +")..reward.." coins"}
+  end
+  return {Ok=false,Message="Unknown action"}
+ end)
+ busy[player]=nil
+ if not ok then warn("Anime Nexus request error:",result);return {Ok=false,Message="Server error"} end
+ return result
+end
+-- Prototype social hub, generated automatically.
+local base=Instance.new("Part");base.Name="NexusHub";base.Anchored=true;base.Size=Vector3.new(110,2,110);base.Position=Vector3.new(0,-2,0);base.Color=Color3.fromRGB(30,35,65);base.Material=Enum.Material.Slate;base.Parent=workspace
+local spawn=Instance.new("SpawnLocation");spawn.Size=Vector3.new(9,1,9);spawn.Position=Vector3.new(0,0,0);spawn.Anchored=true;spawn.Neutral=true;spawn.Color=Color3.fromRGB(65,165,210);spawn.Parent=workspace
+for i=1,12 do
+ local a=i*math.pi/6;local x=math.cos(a)*37;local z=math.sin(a)*37
+ local pillar=Instance.new("Part");pillar.Anchored=true;pillar.Size=Vector3.new(4,math.random(10,18),4);pillar.Position=Vector3.new(x,5,z);pillar.Material=Enum.Material.Neon;pillar.Color=Color3.fromRGB(90,65,150);pillar.Parent=workspace
+end
+
+-- Developer products: each receipt granted at most once, using a DataStore transaction.
+-- Only one ProcessReceipt handler should exist across the entire game.
+local productToPotion={}
+for potionId,productId in pairs(Config.Monetization.PotionProductIds) do
+ if type(productId)=="number" and productId&gt;0 then productToPotion[productId]=potionId end
+end
+MarketplaceService.ProcessReceipt=function(receipt)
+ local potionId=productToPotion[receipt.ProductId]
+ if not potionId then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ local player=Players:GetPlayerByUserId(receipt.PlayerId)
+ if not player or not profiles[player] or busy[player] or policyRestricted[player] then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ busy[player]=true
+ local committed
+ local ok,err=pcall(function()
+  committed=store:UpdateAsync("user_"..player.UserId,function(old)
+   local current=sanitize(old)
+   if current.Receipts[receipt.PurchaseId] then return old end
+   -- Existing in-memory progress may not yet be saved; preserve it when applying receipt.
+   local live=profiles[player]
+   if not live then return nil end
+   local snapshot=sanitize(live)
+   snapshot.Potions[potionId]=(snapshot.Potions[potionId] or 0)+1
+   snapshot.Receipts[receipt.PurchaseId]=true
+   return snapshot
+  end)
+ end)
+ if ok and committed then
+  profiles[player]=sanitize(committed);push(player)
+ end
+ busy[player]=nil
+ if not ok then warn("Receipt save failed",err) end
+ return (ok and committed) and Enum.ProductPurchaseDecision.PurchaseGranted or Enum.ProductPurchaseDecision.NotProcessedYet
+end
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player,passId,wasPurchased)
+ if wasPurchased and passId==Config.Monetization.LuckPassId then refreshEntitlements(player);push(player) end
+end)
+</ProtectedString>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="RBX00000008">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="RBX00000009">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="RBX00000010">
+        <Properties>
+          <string name="Name">NexusClient</string>
+          <bool name="Disabled">false</bool>
+          <ProtectedString name="Source">local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local MarketplaceService=game:GetService("MarketplaceService")
+local me=Players.LocalPlayer
+local gui=Instance.new("ScreenGui");gui.Name="AnimeNexusHybridGui";gui.ResetOnSpawn=false;gui.IgnoreGuiInset=true;gui.Parent=me:WaitForChild("PlayerGui")
+local Config=nil
+local Remote=nil
+local Update=nil
+local Notify=nil
+local function make(class,parent,props)
+ local o=Instance.new(class)
+ for k,v in pairs(props or {}) do o[k]=v end
+ o.Parent=parent;return o
+end
+local dark=Color3.fromRGB(19,23,43);local lighter=Color3.fromRGB(33,39,67);local accent=Color3.fromRGB(98,185,255)
+local main=make("Frame",gui,{Size=UDim2.fromScale(.64,.78),Position=UDim2.fromScale(.18,.11),BackgroundColor3=dark,BorderSizePixel=0})
+make("UICorner",main,{CornerRadius=UDim.new(0,15)})
+make("UISizeConstraint",main,{MinSize=Vector2.new(590,400),MaxSize=Vector2.new(1100,770)})
+local title=make("TextLabel",main,{Position=UDim2.fromScale(.035,.025),Size=UDim2.fromScale(.67,.075),Text="ANIME NEXUS  |  RIFT COLLECTION",Font=Enum.Font.GothamBold,TextScaled=true,TextColor3=Color3.new(1,1,1),BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left})
+local wallet=make("TextLabel",main,{Position=UDim2.fromScale(.69,.033),Size=UDim2.fromScale(.28,.05),Text="",Font=Enum.Font.GothamBold,TextScaled=true,TextColor3=Color3.fromRGB(255,216,111),BackgroundTransparency=1})
+local tabs=make("Frame",main,{Position=UDim2.fromScale(.035,.12),Size=UDim2.fromScale(.93,.085),BackgroundTransparency=1})
+make("UIListLayout",tabs,{FillDirection=Enum.FillDirection.Horizontal,Padding=UDim.new(.012,0),SortOrder=Enum.SortOrder.LayoutOrder})
+local panel=make("ScrollingFrame",main,{Position=UDim2.fromScale(.035,.22),Size=UDim2.fromScale(.93,.66),BackgroundColor3=lighter,BorderSizePixel=0,CanvasSize=UDim2.fromOffset(0,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollBarThickness=6})
+make("UICorner",panel,{CornerRadius=UDim.new(0,10)})
+make("UIPadding",panel,{PaddingTop=UDim.new(0,12),PaddingBottom=UDim.new(0,12),PaddingLeft=UDim.new(0,12),PaddingRight=UDim.new(0,12)})
+local layout=make("UIListLayout",panel,{Padding=UDim.new(0,9),SortOrder=Enum.SortOrder.LayoutOrder})
+local toast=make("TextLabel",main,{Position=UDim2.fromScale(.04,.91),Size=UDim2.fromScale(.92,.065),BackgroundTransparency=1,TextColor3=accent,Text="Welcome to the Nexus",TextScaled=true,Font=Enum.Font.GothamBold})
+local state=nil;local tab="Packs";local locked=false
+local function text(parent,msg,height,color)
+ return make("TextLabel",parent,{Size=UDim2.new(1,-10,0,height or 34),BackgroundTransparency=1,Text=msg,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextColor3=color or Color3.new(1,1,1),Font=Enum.Font.Gotham,TextSize=16})
+end
+local function button(parent,msg,callback,height)
+ local b=make("TextButton",parent,{Size=UDim2.new(1,-12,0,height or 43),BackgroundColor3=Color3.fromRGB(50,75,120),TextColor3=Color3.new(1,1,1),Text=msg,TextSize=16,Font=Enum.Font.GothamBold,BorderSizePixel=0})
+ make("UICorner",b,{CornerRadius=UDim.new(0,7)})
+ b.Activated:Connect(callback);return b
+end
+local function request(action,arg)
+ if locked then return end
+ locked=true
+ local ok,result=pcall(function()return Remote:InvokeServer(action,arg)end)
+ locked=false
+ if not ok then toast.Text="Could not contact server";return end
+ if result and result.Profile then state=result.Profile end
+ if result and result.Message then toast.Text=result.Message end
+ if result and not result.Ok then toast.Text=result.Message or "Action failed" end
+ return result
+end
+local render
+local function action(name,arg)
+ local r=request(name,arg)
+ if r and r.Ok and name=="Open" then
+  local c=Config.Cards[r.Id]
+  toast.Text="SUMMONED: "..c.Name.." ["..r.Rarity.."]!"
+ end
+ render()
+end
+local function sortedCardIds()
+ local ids={};for id,c in pairs(Config.Cards) do table.insert(ids,id) end
+ table.sort(ids,function(a,b)
+  local ra=table.find(Config.Rarities,Config.Cards[a].Rarity) or 1
+  local rb=table.find(Config.Rarities,Config.Cards[b].Rarity) or 1
+  if ra~=rb then return ra&gt;rb end
+  return a&lt;b
+ end)
+ return ids
+end
+render=function()
+ if not state then
+  wallet.Text="CONNECTING..."
+  for _,c in ipairs(panel:GetChildren()) do if c:IsA("GuiObject") then c:Destroy() end end
+  text(panel,"Anime Nexus is starting up. The card collection will appear when the server connects.",80,accent)
+  text(panel,"If this stays on screen, open View &gt; Output and look for red error messages. You can still see that the interface script loaded.",80)
+  return
+ end
+ wallet.Text="◈ "..state.Coins.." COINS"
+ for _,c in ipairs(panel:GetChildren()) do if c:IsA("GuiObject") then c:Destroy() end end
+ if tab=="Packs" then
+  text(panel,"Open packs to collect character cards. All currency is earned through gameplay.",43)
+  for _,id in ipairs({"basic","elite","cosmic"}) do
+   local p=Config.Packs[id];local pity=state.Pity[id] or 0
+   text(panel,p.Name.."  •  "..p.Price.." coins  •  Legendary+ pity "..pity.." / "..p.Pity,35,accent)
+   text(panel,p.Description.." | Current odds shown below (pity overrides next guaranteed pull)",38)
+   local odd=state.Odds and state.Odds[id] or p.Weights
+   local list={};for _,rarity in ipairs(Config.Rarities) do
+    if (odd[rarity] or 0)&gt;0 then table.insert(list,rarity.." "..string.format("%.4f",odd[rarity]).."%") end
+   end
+   text(panel,table.concat(list,"  |  "),70)
+   text(panel,"Individual card odds: divide rarity percentage equally among cards in that rarity (two or one per tier).",43)
+   button(panel,"OPEN "..string.upper(p.Name),function()action("Open",id)end)
+  end
+  text(panel,"Pity resets after any Legendary, Mythic or Celestial. Luck reweights Epic+ odds.",55)
+ elseif tab=="Cards" then
+  text(panel,"Owned cards: choose up to 3 favourites to showcase behind your avatar.",42,accent)
+  for _,id in ipairs(sortedCardIds()) do
+   local c=Config.Cards[id];local count=state.Collection[id] or 0
+   if count&gt;0 then
+    local fav=table.find(state.Favorites,id)~=nil
+    text(panel,c.Name.."  |  "..c.Rarity.."  |  x"..count,30,Config.RarityColors[c.Rarity])
+    text(panel,"Power "..c.Power.." · Speed "..c.Speed.." · Defence "..c.Defense.." · Energy "..c.Energy.." · "..c.Trait,37)
+    button(panel,fav and "★ REMOVE FAVOURITE" or "☆ ADD FAVOURITE",function()action("Favorite",id)end,37)
+   end
+  end
+ elseif tab=="Expeditions" then
+  local power=0;local scores={}
+  for id,count in pairs(state.Collection) do if count&gt;0 and Config.Cards[id] then
+   local c=Config.Cards[id];table.insert(scores,c.Power+c.Speed*.35+c.Defense*.35+c.Energy*.3)
+  end end
+  table.sort(scores,function(a,b)return a&gt;b end);for i=1,math.min(5,#scores) do power+=scores[i] end
+  text(panel,"Top 5 unique owned cards automatically form your expedition team.",42)
+  text(panel,"Team Power: "..math.floor(power).." | Expeditions completed: "..state.Completed,35,accent)
+  if state.Expedition then
+   local e=Config.Expeditions[state.Expedition.Id]
+   local remaining=math.max(0,state.Expedition.EndsAt-os.time())
+   text(panel,e.Name.." | "..remaining.." seconds remaining (refresh to update)",42)
+   button(panel,"CLAIM COMPLETED EXPEDITION",function()action("ClaimExpedition")end)
+  else
+   for _,id in ipairs({"scouting","citadel","abyss"}) do
+    local e=Config.Expeditions[id]
+    text(panel,e.Name.."  |  "..e.Duration.."s  |  Recommended power "..e.RequiredPower.."  |  Reward "..e.Reward,43,accent)
+    button(panel,"START (requires "..e.Unlock.." completions)",function()action("StartExpedition",id)end)
+   end
+  end
+  text(panel,"Underpowered teams may fail and get 20% of normal reward. Progress continues while offline.",56)
+ elseif tab=="Potions" then
+  text(panel,"Craft luck potions from expedition materials, or buy potions with Robux where permitted.",58,accent)
+  text(panel,"Essence: "..(state.Essence or 0).."  |  Crystals: "..(state.Crystals or 0),32)
+  if state.ActivePotion and state.ActivePotion.EndsAt&gt;os.time() then
+   text(panel,"Active: "..Config.Potions[state.ActivePotion.Id].Name.." (expires "..os.date("!%H:%M UTC",state.ActivePotion.EndsAt)..")",45)
+  end
+  for _,id in ipairs({"minor","major"}) do
+   local potion=Config.Potions[id];local ing=potion.Ingredients
+   text(panel,potion.Name.." | +"..math.floor(potion.Bonus*100).."% high-rarity weight factor | "..math.floor(potion.Duration/60).." min | Owned: "..(state.Potions[id] or 0),55,accent)
+   button(panel,"CRAFT — "..ing.Essence.." Essence + "..ing.Crystals.." Crystals",function()action("CraftPotion",id)end)
+   button(panel,"USE POTION",function()action("UsePotion",id)end)
+   local productId=Config.Monetization.PotionProductIds[id]
+   if state.PaidLuckAvailable and productId&gt;0 then
+    button(panel,"BUY POTION WITH ROBUX",function()
+     MarketplaceService:PromptProductPurchase(me,productId)
+    end)
+   end
+  end
+ elseif tab=="Luck" then
+  local cost=Config.LuckUpgradeCosts[state.Luck+1] or 0
+  local required=Config.LuckExpeditionRequirements[state.Luck+1] or 0
+  text(panel,"Luck upgrades permanently improve relative odds of Epic, Legendary, Mythic and Celestial cards.",70)
+  text(panel,"Luck level: "..state.Luck.." / "..Config.LuckMaxLevel,44,accent)
+  text(panel,"Epic+ weight multiplier: x"..string.format("%.2f",1+state.Luck*Config.LuckBonusPerLevel),44)
+  text(panel,"Requires "..required.." completed expeditions. Next upgrade: "..cost.." Rift Coins.",45)
+  button(panel,state.Luck&gt;=Config.LuckMaxLevel and "MAX LUCK" or ("UPGRADE LUCK  —  "..cost.." coins"),function()action("Luck")end)
+  text(panel,"Paid 2x luck pass: "..(state.HasLuckPass and "OWNED" or "NOT OWNED").." | Access: "..(state.PaidLuckAvailable and "eligible" or "not available"),45)
+  if state.PaidLuckAvailable and Config.Monetization.LuckPassId&gt;0 then
+   button(panel,"GET PERMANENT 2X LUCK PASS",function()
+    MarketplaceService:PromptGamePassPurchase(me,Config.Monetization.LuckPassId)
+   end)
+   button(panel,"REFRESH OWNERSHIP",function()action("RefreshPass")end)
+  end
+  text(panel,"Luck does not increase the total chance of every rarity independently; pack weights are normalised after bonuses. Pity is tracked separately for each pack.",80)
+ end
+end
+for _,name in ipairs({"Packs","Cards","Expeditions","Luck","Potions"}) do
+ local b=make("TextButton",tabs,{Size=UDim2.new(.188,0,1,0),BackgroundColor3=Color3.fromRGB(46,59,99),Text=name,Font=Enum.Font.GothamBold,TextScaled=true,TextColor3=Color3.new(1,1,1),BorderSizePixel=0})
+ make("UICorner",b,{CornerRadius=UDim.new(0,7)})
+ b.Activated:Connect(function()tab=name;render()end)
+end
+render()
+toast.Text="Loading game services..."
+task.spawn(function()
+ local configModule=ReplicatedStorage:WaitForChild("NexusConfig",20)
+ local remotes=ReplicatedStorage:WaitForChild("NexusRemotes",20)
+ if not configModule or not remotes then
+  toast.Text="Setup problem: NexusConfig or NexusRemotes missing. Check Output."
+  warn("ANIME NEXUS: Missing NexusConfig or NexusRemotes after 20s")
+  return
+ end
+ local ok,loaded=pcall(require,configModule)
+ if not ok then
+  toast.Text="NexusConfig has a Lua error. Check Output."
+  warn("ANIME NEXUS: NexusConfig error:",loaded)
+  return
+ end
+ Config=loaded
+ Remote=remotes:WaitForChild("Request",15)
+ Update=remotes:WaitForChild("Updated",15)
+ Notify=remotes:WaitForChild("Notify",15)
+ if not Remote or not Update or not Notify then
+  toast.Text="Server network setup incomplete. Check Output."
+  return
+ end
+ Update.OnClientEvent:Connect(function(p)state=p;render()end)
+ Notify.OnClientEvent:Connect(function(s)toast.Text=s end)
+ for attempt=1,30 do
+  local r=request("Get")
+  if r and r.Ok then state=r.Profile;render();toast.Text="Welcome to the Nexus! Open a Rift Pack to start.";return end
+  if attempt%5==0 then toast.Text="Waiting for collection data (attempt "..attempt.."/30)..." end
+  task.wait(1)
+ end
+ toast.Text="Could not load profile. Check Studio Output for a DataStore error."
+ warn("ANIME NEXUS: Profile could not be fetched after 30 attempts")
+end)
+</ProtectedString>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

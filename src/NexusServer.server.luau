@@ -8,6 +8,12 @@ local PolicyService=game:GetService("PolicyService")
 local Config=require(ReplicatedStorage:WaitForChild("NexusConfig"))
 local store=DataStoreService:GetDataStore("AnimeNexusHybrid_v2")
 local Progression=require(ReplicatedStorage:WaitForChild("NexusProgression")).new(Config)
+local rankingService
+local rankingOk,rankingResult=pcall(function()return require(script.Parent:WaitForChild("NexusRankings")).new(DataStoreService,Players,os.time)end)
+if rankingOk then rankingService=rankingResult else warn("Anime Nexus rankings unavailable:",rankingResult) end
+local coopService
+local coopOk,coopResult=pcall(function()return require(script.Parent:WaitForChild("NexusCoop")).new(DataStoreService,os.time)end)
+if coopOk then coopService=coopResult else warn("Anime Nexus shared challenge unavailable:",coopResult) end
 local HttpService=game:GetService("HttpService")
 local persistence=require(script.Parent:WaitForChild("NexusPersistence")).new(store,game.JobId..HttpService:GenerateGUID(false),os.time)
 local reconciling={}
@@ -54,7 +60,7 @@ local function packOdds(pack,p,player)
  return w
 end
 local function defaultProfile()
- return {Coins=Config.FreeStarterCoins,Luck=0,Collection={recruit=1},Favorites={"recruit"},Pity={},Expedition=nil,Completed=0,Rolls=0,Essence=0,Crystals=0,Potions={},ActivePotion=nil,Receipts={},Progression=Progression.sanitize(nil,{recruit=1})}
+ return {Coins=Config.FreeStarterCoins,Luck=0,Collection={recruit=1},Favorites={"recruit"},Pity={},Expedition=nil,Completed=0,Rolls=0,Essence=0,Crystals=0,Potions={},ActivePotion=nil,Receipts={},Progression=Progression.sanitize(nil,{recruit=1},os.time())}
 end
 local function sanitize(raw)
  local p=defaultProfile()
@@ -75,9 +81,10 @@ local function sanitize(raw)
  p.Rolls=math.clamp(math.floor(tonumber(raw.Rolls) or 0),0,100000000)
  p.Collection={}
  if type(raw.Collection)=="table" then for id,count in pairs(raw.Collection) do
-  if Config.Cards[id] and type(count)=="number" then p.Collection[id]=math.clamp(math.floor(count),0,100000) end
+  if Config.Cards[id] and type(count)=="number" and count==count then p.Collection[id]=math.clamp(math.floor(count),0,100000) end
  end end
- if not next(p.Collection) then p.Collection.recruit=1 end
+ local hasCard=false;for _,count in pairs(p.Collection) do if count>0 then hasCard=true;break end end
+ if not hasCard then p.Collection.recruit=1 end
  p.Favorites={}
  if type(raw.Favorites)=="table" then local seen={};for _,id in ipairs(raw.Favorites) do
   if #p.Favorites>=3 then break end
@@ -88,16 +95,19 @@ local function sanitize(raw)
  if type(raw.Expedition)=="table" and Config.Expeditions[raw.Expedition.Id] then
   local e=raw.Expedition
   if type(e.EndsAt)=="number" and type(e.Success)=="boolean" then
-   p.Expedition={Id=e.Id,EndsAt=math.floor(e.EndsAt),Success=e.Success}
+   local team={};local seen={}
+   if type(e.Team)=="table" then for _,id in ipairs(e.Team) do if #team<5 and Config.Cards[id] and not seen[id] then table.insert(team,id);seen[id]=true end end end
+   local route=Config.ExpeditionRoutes[e.Route] and e.Route or "steady"
+   p.Expedition={Id=e.Id,EndsAt=math.floor(e.EndsAt),Success=e.Success,Route=route,Team=team}
   end
  end
- p.Progression=Progression.sanitize(raw.Progression,p.Collection)
+ p.Progression=Progression.sanitize(raw.Progression,p.Collection,os.time())
  return p
 end
 local function public(p,player)
  local power,team,synergy=Progression.team(p)
- local expedition=p.Expedition and {Id=p.Expedition.Id,EndsAt=p.Expedition.EndsAt} or nil
- return {Progression=Progression.public(p),TeamPower=power,EffectiveTeam=team,Synergy=synergy,SessionOnly=player and not writable[player] or false,Coins=p.Coins,Luck=p.Luck,Collection=table.clone(p.Collection),Favorites=table.clone(p.Favorites),Pity=table.clone(p.Pity),Expedition=expedition,Completed=p.Completed,Rolls=p.Rolls,Essence=p.Essence,Crystals=p.Crystals,Potions=table.clone(p.Potions),ActivePotion=p.ActivePotion and table.clone(p.ActivePotion) or nil,HasLuckPass=player and passOwners[player] or false,PaidLuckAvailable=player and not policyRestricted[player] or false,Odds=player and {basic=packOdds(Config.Packs.basic,p,player),elite=packOdds(Config.Packs.elite,p,player),cosmic=packOdds(Config.Packs.cosmic,p,player)} or {}}
+ local expedition=p.Expedition and {Id=p.Expedition.Id,EndsAt=p.Expedition.EndsAt,Route=p.Expedition.Route} or nil
+ return {Progression=Progression.public(p,os.time()),TeamPower=power,EffectiveTeam=team,Synergy=synergy,SessionOnly=player and not writable[player] or false,Coins=p.Coins,Luck=p.Luck,Collection=table.clone(p.Collection),Favorites=table.clone(p.Favorites),Pity=table.clone(p.Pity),Expedition=expedition,Completed=p.Completed,Rolls=p.Rolls,Essence=p.Essence,Crystals=p.Crystals,Potions=table.clone(p.Potions),ActivePotion=p.ActivePotion and table.clone(p.ActivePotion) or nil,HasLuckPass=player and passOwners[player] or false,PaidLuckAvailable=player and not policyRestricted[player] or false,Odds=player and {basic=packOdds(Config.Packs.basic,p,player),elite=packOdds(Config.Packs.elite,p,player),cosmic=packOdds(Config.Packs.cosmic,p,player)} or {}}
 end
 local function push(player)
  local p=profiles[player];if p then
@@ -131,7 +141,10 @@ local function roll(p,packId,player)
   local weights,sum=luckWeights(pack,p,player)
   local pick=rng:NextNumber(0,sum);local cumulative=0
   for _,r in ipairs(Config.Rarities) do cumulative+=weights[r] or 0;if pick<cumulative then rarity=r;break end end
-  rarity=rarity or "Common"
+  if not rarity then for i=#Config.Rarities,1,-1 do
+   local candidate=Config.Rarities[i]
+   if (weights[candidate] or 0)>0 then rarity=candidate;break end
+  end end
  end
  local candidates={};for id,c in pairs(Config.Cards) do if c.Rarity==rarity and c.Enabled~=false then table.insert(candidates,id) end end
  table.sort(candidates)
@@ -143,7 +156,27 @@ local function removeDisplay(player)
  if displays[player] then displays[player]:Destroy();displays[player]=nil end
 end
 local function displayModel(id,index)
- local card=Config.Cards[id];local m=Instance.new("Model");m.Name=id
+ local card=Config.Cards[id]
+ local library=ReplicatedStorage:FindFirstChild("NexusModels")
+ local authored=library and library:FindFirstChild(card.Identity.ModelName or id)
+ if authored and authored:IsA("Model") then
+  local m=authored:Clone();m.Name=id
+  local root=m.PrimaryPart or m:FindFirstChildWhichIsA("BasePart",true)
+  if root then
+   m.PrimaryPart=root
+   for _,descendant in ipairs(m:GetDescendants()) do
+    if descendant:IsA("BasePart") then
+     descendant.Anchored=true;descendant.CanCollide=false;descendant.CanTouch=false;descendant.CanQuery=false
+    end
+   end
+   local bill=Instance.new("BillboardGui");bill.Name="NameTag";bill.Size=UDim2.fromOffset(190,50);bill.StudsOffset=Vector3.new(0,4.65,0);bill.AlwaysOnTop=true;bill.Parent=root
+   local label=Instance.new("TextLabel");label.Size=UDim2.fromScale(1,1);label.BackgroundTransparency=1;label.Text=card.Name.."\n"..card.Rarity
+   label.TextColor3=card.Color;label.TextStrokeTransparency=0;label.Font=Enum.Font.GothamBold;label.TextScaled=true;label.Parent=bill
+   return m
+  end
+  m:Destroy()
+ end
+ local m=Instance.new("Model");m.Name=id
  local root=Instance.new("Part");root.Name="HumanoidRootPart";root.Size=Vector3.new(1,1,1);root.Transparency=1;root.Anchored=true;root.CanCollide=false;root.CanTouch=false;root.CanQuery=false;root.Parent=m;m.PrimaryPart=root
  local function part(n,size,pos,color,shape)
   local x=Instance.new("Part");x.Name=n;x.Size=size;x.CFrame=CFrame.new(pos);x.Color=color;x.Material=Enum.Material.Neon;x.Anchored=true;x.CanCollide=false;x.CanTouch=false;x.CanQuery=false
@@ -210,6 +243,11 @@ local function save(player,release)
   end
   task.wait(attempt)
  end
+ if success and rankingService then
+  local unique=0;for _,n in pairs(p.Collection) do if n>0 then unique+=1 end end
+  local ok,err=rankingService.update(player.UserId,{Cards=unique,Power=Progression.team(p),Bosses=p.Progression.BossWins},release)
+  if not ok then warn("Anime Nexus rankings update failed:",err) end
+ end
  saving[player]=nil
  return success
 end
@@ -261,7 +299,7 @@ Request.OnServerInvoke=function(player,action,arg)
  local now=os.clock();local t=throttles[player] or 0
  if now-t<0.15 then return {Ok=false,Message="Please slow down"} end
  throttles[player]=now
- if reconciling[player] then return {Ok=false,Message="Purchase reconciliation pending; please wait"} end
+ if reconciling[player] and (reconciling[player]~="coop" or action~="CoopClaim") then return {Ok=false,Message="Reward verification pending; please retry shortly"} end
  if busy[player] or saving[player] then return {Ok=false,Message="Request processing"} end
  busy[player]=true
  local ok,result=pcall(function()
@@ -275,12 +313,48 @@ Request.OnServerInvoke=function(player,action,arg)
    if handled then push(player) end
    return {Ok=handled,Message=notice,Profile=public(p,player)}
   end
+  if action=="Discover" then return {Ok=false,Message="Explore the world to discover memories"} end
   local handled,notice=Progression.act(p,action,arg,os.time())
   if handled~=nil then
-   if handled then if action=="Upgrade" then refreshDisplay(player) end;push(player) end
+   if handled then if action=="Upgrade" or action=="Awaken" then refreshDisplay(player) end;push(player) end
    return {Ok=handled,Message=notice,Profile=public(p,player)}
   end
   if action=="Get" then return {Ok=true,Profile=public(p,player),TeamPower=teamPower(p)} end
+  if action=="CoopStatus" then
+   if not coopService then return {Ok=false,Message="Shared challenge is temporarily unavailable"} end
+   local day=arg and tonumber(arg) or coopService.day()
+   local status,notice=coopService.status(day,player.UserId)
+   if not status then return {Ok=false,Message=notice} end
+   return {Ok=true,Status=status}
+  elseif action=="CoopContribute" then
+   if not writable[player] or not coopService then return {Ok=false,Message="Shared challenge needs a saved profile and working storage"} end
+   local score,notice=coopService.contribute(coopService.day(),player.UserId,Progression.team(p))
+   if not score then return {Ok=false,Message=notice} end
+   local status=coopService.status(coopService.day(),player.UserId)
+   return {Ok=true,Status=status,Message="Your team contributed "..score.." power to the shared challenge"}
+  elseif action=="CoopClaim" then
+   if not writable[player] or not coopService then return {Ok=false,Message="Shared challenge is unavailable"} end
+   local day=arg and tonumber(arg)
+   local status,notice=coopService.status(day,player.UserId)
+   if not status then return {Ok=false,Message=notice} end
+   if not status.Ended or status.Contribution<=0 then return {Ok=false,Message="Contribute during the challenge and return after it ends"} end
+   local key=tostring(day)
+   if p.Progression.CoopClaims[key] then return {Ok=false,Message="Shared reward already claimed"} end
+   local reward=status.Complete and {Coins=300,Essence=20,Crystals=2} or {Coins=50,Essence=5,Crystals=0}
+   local committed=persistence.claimCoop(player.UserId,sanitize(p),day,reward)
+   if not committed then
+    reconciling[player]="coop"
+    return {Ok=false,Message="Reward verification pending; retry this claim shortly"}
+   end
+   reconciling[player]=nil;profiles[player]=sanitize(committed);push(player)
+   return {Ok=true,Profile=public(profiles[player],player),Message=status.Complete and "Shared boss defeated! Team reward claimed" or "Shared challenge ended. Participation reward claimed"}
+  end
+  if action=="Leaderboard" then
+   if not rankingService then return {Ok=false,Message="Rankings are temporarily unavailable"} end
+   local rows,notice=rankingService.top(arg)
+   if not rows then return {Ok=false,Message=notice} end
+   return {Ok=true,Rows=rows,Message=notice}
+  end
   if action=="Open" then
    if type(arg)~="string" or not Config.Packs[arg] then return {Ok=false,Message="Invalid pack"} end
    local pack=Config.Packs[arg]
@@ -317,28 +391,30 @@ Request.OnServerInvoke=function(player,action,arg)
    refreshEntitlements(player);push(player)
    return {Ok=true,Profile=public(p,player)}
   elseif action=="StartExpedition" then
-   if type(arg)~="string" or not Config.Expeditions[arg] then return {Ok=false,Message="Invalid expedition"} end
+   if type(arg)~="string" then return {Ok=false,Message="Invalid expedition"} end
+   local expeditionId,routeId=string.match(arg,"^([%w_]+)|([%w_]+)$")
+   expeditionId=expeditionId or arg;routeId=routeId or "steady"
+   if not Config.Expeditions[expeditionId] or not Config.ExpeditionRoutes[routeId] then return {Ok=false,Message="Invalid expedition route"} end
    if p.Expedition then return {Ok=false,Message="Finish current expedition first"} end
-   local e=Config.Expeditions[arg]
+   local e=Config.Expeditions[expeditionId]
    if not p.Progression.Worlds[e.World] then return {Ok=false,Message="Unlock this world first"} end
    if p.Completed<e.Unlock then return {Ok=false,Message="Complete "..e.Unlock.." expeditions to unlock"} end
-   local power=teamPower(p)
-   -- Underpowered teams may try but have lower success chances; 20% minimum.
-   local chance=math.clamp(power/e.RequiredPower,0.2,1)
-   local _,team=Progression.team(p);local speed=0
-   for _,id in ipairs(team) do speed+=Config.Cards[id].Speed end
-   local duration=math.ceil(e.Duration*(1-math.min(.25,speed/10000)))
-   p.Expedition={Id=arg,EndsAt=os.time()+duration,Success=rng:NextNumber()<chance}
+   local plan=Progression.expeditionPlan(p,expeditionId,routeId)
+   p.Expedition={Id=expeditionId,EndsAt=os.time()+plan.Duration,Success=rng:NextNumber()<plan.Chance,Route=routeId,Team=plan.Team}
    push(player);return {Ok=true,Profile=public(p,player),Message="Expedition started"}
   elseif action=="ClaimExpedition" then
    local current=p.Expedition
    if not current then return {Ok=false,Message="No active expedition"} end
    if os.time()<current.EndsAt then return {Ok=false,Message="Expedition not finished"} end
    local e=Config.Expeditions[current.Id]
-   local reward=current.Success and e.Reward or math.floor(e.Reward*0.2)
+   local route=Config.ExpeditionRoutes[current.Route] or Config.ExpeditionRoutes.steady
+   local base=math.floor(e.Reward*route.Reward)
+   local reward=current.Success and base or math.floor(base*0.2)
    p.Coins+=reward;p.Completed+=1;p.Expedition=nil
-   p.Essence+=current.Success and (e.Reward//65+1) or 1
-   p.Crystals+=current.Success and math.max(1,e.Reward//400) or 0
+   p.Essence+=current.Success and (base//65+1) or 1
+   p.Crystals+=current.Success and math.max(1,base//400) or 0
+   Progression.grantMastery(p,current.Team,current.Success and math.max(10,base//12) or 3)
+   Progression.addEventPoints(p,os.time(),current.Success and 2 or 1)
    push(player);return {Ok=true,Profile=public(p,player),Message=(current.Success and "Success! +" or "Partial rewards +")..reward.." coins"}
   end
   return {Ok=false,Message="Unknown action"}
@@ -349,7 +425,13 @@ Request.OnServerInvoke=function(player,action,arg)
 end
 World=require(script.Parent:WaitForChild("NexusWorld")).create(Config,function(player,id)
  local p=profiles[player];return p and not closing[player] and p.Progression.Worlds[id]==true
-end,message)
+end,message,function(player,id)
+ local p=profiles[player]
+ if not p or closing[player] or busy[player] or saving[player] or reconciling[player] then return false,"Please wait for your profile to finish updating" end
+ local ok,result=Progression.act(p,"Discover",id,os.time())
+ if ok then push(player) end
+ return ok,result
+end)
 
 -- Developer products: each receipt granted at most once, using a DataStore transaction.
 -- Only one ProcessReceipt handler should exist across the entire game.
@@ -361,7 +443,7 @@ MarketplaceService.ProcessReceipt=function(receipt)
  local potionId=productToPotion[receipt.ProductId]
  if not potionId then return Enum.ProductPurchaseDecision.NotProcessedYet end
  local player=Players:GetPlayerByUserId(receipt.PlayerId)
- if not player or not profiles[player] or busy[player] or saving[player] or closing[player] or not writable[player] or policyRestricted[player] then return Enum.ProductPurchaseDecision.NotProcessedYet end
+ if not player or not profiles[player] or busy[player] or saving[player] or closing[player] or not writable[player] or policyRestricted[player] or (reconciling[player] and reconciling[player]~="purchase") then return Enum.ProductPurchaseDecision.NotProcessedYet end
  busy[player]=true
  local p=profiles[player]
  if p.Receipts[receipt.PurchaseId] then busy[player]=nil;return Enum.ProductPurchaseDecision.PurchaseGranted end
@@ -369,7 +451,7 @@ MarketplaceService.ProcessReceipt=function(receipt)
  local committed=persistence.purchase(player.UserId,snapshot,receipt.PurchaseId,potionId)
  local ok=committed~=nil
  if ok then reconciling[player]=nil;profiles[player]=sanitize(committed);push(player)
- else reconciling[player]=true;message(player,"Purchase pending verification. Your progress is temporarily paused to protect your collection.") end
+ else reconciling[player]="purchase";message(player,"Purchase pending verification. Your progress is temporarily paused to protect your collection.") end
  busy[player]=nil
  return ok and Enum.ProductPurchaseDecision.PurchaseGranted or Enum.ProductPurchaseDecision.NotProcessedYet
 end

@@ -25,6 +25,12 @@
       },
       "NexusWorld": {
         "$path": "src/NexusWorld.luau"
+      },
+      "NexusRankings": {
+        "$path": "src/NexusRankings.luau"
+      },
+      "NexusCoop": {
+        "$path": "src/NexusCoop.luau"
       }
     },
     "StarterPlayer": {

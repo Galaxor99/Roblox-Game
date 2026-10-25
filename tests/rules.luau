@@ -124,6 +124,10 @@ test('public progression tables cannot mutate authoritative state',function()
 end)
 local function fakeStore()
  local store={data={},fail=false}
+ function store:GetAsync(key)
+  if self.fail then error('Simulated outage') end
+  return self.data[key]
+ end
  function store:UpdateAsync(key,fn)
   if self.fail then error('Simulated outage') end
   local result=fn(self.data[key]);if result~=nil then self.data[key]=result end;return result
@@ -179,4 +183,147 @@ test('purchase denial and outage cannot report a grant',function()
  local store=fakeStore();local a=Persistence.new(store,'a',function()return 0 end)
  assert(not a.purchase(1,{Potions={},Receipts={}},'r','minor'));assert(a.load(1))
  store.fail=true;assert(not a.purchase(1,{Potions={},Receipts={}},'r','minor'))
+end)
+test('mastery follows expedition team and awakening is earned deliberately',function()
+ local p=profile({recruit=2,spark=1})
+ local base=rules.cardPower(p,'recruit')
+ rules.grantMastery(p,{'recruit','recruit','spark'},250)
+ assert(p.Progression.MasteryXp.recruit==250 and p.Progression.MasteryXp.spark==250)
+ local rank=rules.masteryRank(p,'recruit');assert(rank>=3)
+ assert(not rules.act(p,'Awaken','recruit',0))
+ p.Progression.Levels.recruit=25;p.Progression.MasteryXp.recruit=500;p.Progression.BossWins=3
+ assert(not rules.act(p,'Awaken','recruit',0))
+ p.Progression.MasteryXp.recruit=600;p.Crystals=Config.Awakening.Crystals
+ assert(rules.act(p,'Awaken','recruit',0))
+ assert(p.Progression.Awakened.recruit and not rules.act(p,'Awaken','recruit',0))
+ assert(rules.cardPower(p,'recruit')>base*2)
+end)
+test('route planning honors selected cards, risk and speed',function()
+ local p=profile()
+ local steady=rules.expeditionPlan(p,'scouting','steady')
+ local swift=rules.expeditionPlan(p,'scouting','swift')
+ local perilous=rules.expeditionPlan(p,'scouting','perilous')
+ assert(steady and swift and perilous and not rules.expeditionPlan(p,'scouting','missing'))
+ assert(swift.Duration<steady.Duration and perilous.Reward>steady.Reward)
+ assert(perilous.Chance<=steady.Chance and #steady.Team>0)
+ assert(steady.TraitBonus>0 and swift.TraitBonus>0)
+ for _,card in pairs(Config.Cards) do assert(Config.TraitEffects[card.Trait]) end
+end)
+test('memory discoveries are unique and chapter rewards require prior story',function()
+ local p=profile();p.Completed=30;p.Progression.BossWins=5
+ assert(not rules.act(p,'Chapter','fracture',0))
+ for _,id in ipairs(Config.Discoveries.hub) do assert(rules.act(p,'Discover',id,0));assert(not rules.act(p,'Discover',id,0)) end
+ local count=p.Collection.warden or 0
+ assert(rules.act(p,'Chapter','fracture',0));assert(p.Collection.warden==count+1)
+ assert(not rules.act(p,'Chapter','fracture',0))
+ for _,id in ipairs(Config.Discoveries.neon) do assert(not rules.act(p,'Discover',id,0)) end
+ assert(rules.act(p,'UnlockWorld','neon',0))
+ for _,id in ipairs(Config.Discoveries.neon) do assert(rules.act(p,'Discover',id,0)) end
+ assert(rules.act(p,'Chapter','neon',0));assert(p.Collection.gunslinger==1)
+end)
+test('new progression fields survive migration and public snapshots are isolated',function()
+ local p=profile({recruit=1})
+ p.Progression.MasteryXp.recruit=600;p.Progression.Awakened.recruit=true
+ p.Progression.Discoveries.hub_archive=true;p.Progression.Chapters.fracture=true
+ local restored=rules.sanitize(p.Progression,p.Collection)
+ assert(restored.MasteryXp.recruit==600 and restored.Awakened.recruit)
+ assert(restored.Discoveries.hub_archive and restored.Chapters.fracture)
+ local public=rules.public(p);public.MasteryXp.recruit=0;public.Discoveries.hub_archive=false
+ assert(p.Progression.MasteryXp.recruit==600 and p.Progression.Discoveries.hub_archive)
+end)
+test('weekly event points rotate on UTC boundaries and rewards claim once',function()
+ local p=profile();local first=rules.event(0)
+ assert(first==Config.WeeklyEvents[1])
+ rules.addEventPoints(p,10,5)
+ assert(rules.eventProgress(p,10).Points==5)
+ local before=p.Coins
+ assert(rules.act(p,'EventClaim','first',10))
+ assert(p.Coins==before+200 and not rules.act(p,'EventClaim','first',10))
+ assert(rules.eventProgress(p,604800).Points==0)
+ assert(not rules.act(p,'EventClaim','first',604800))
+ rules.addEventPoints(p,604800,35)
+ assert(rules.act(p,'EventClaim','final',604800))
+ local event=rules.event(604800)
+ assert(p.Collection[event.Card]==1 and p.Progression.Variants[event.Card].Normal==1)
+end)
+test('daily and boss claims grant weekly points without exposing boss result',function()
+ local p=profile();assert(rules.act(p,'Daily',nil,100))
+ assert(rules.public(p,100).Weekly.Points==1)
+ assert(rules.startBoss(p,'guardian',100,0))
+ assert(rules.public(p,100).Challenge.Success==nil)
+ assert(rules.act(p,'ClaimBoss',nil,145))
+ assert(rules.public(p,145).Weekly.Points==4)
+end)
+test('global rankings write bounded scores and cache top ten reads',function()
+ local now=0;local boards={}
+ local service={GetOrderedDataStore=function(_,name)
+  local db={data={},reads=0,writes=0}
+  function db:SetAsync(key,value)self.data[key]=value;self.writes+=1 end
+  function db:GetSortedAsync(ascending,limit)
+   self.reads+=1;local rows={}
+   for key,value in pairs(self.data) do table.insert(rows,{key=key,value=value}) end
+   table.sort(rows,function(a,b)return ascending and a.value<b.value or a.value>b.value end)
+   while #rows>limit do table.remove(rows) end
+   return {GetCurrentPage=function()return rows end}
+  end
+  boards[name]=db;return db
+ end}
+ local players={GetNameFromUserIdAsync=function(_,id)return 'Player'..id end}
+ local ranks=Rankings.new(service,players,function()return now end)
+ assert(ranks.update(7,{Cards=3,Power=500,Bosses=1}))
+ assert(boards.AnimeNexusPower_v1.data['7']==500)
+ assert(ranks.update(7,{Cards=5,Power=600,Bosses=2}))
+ assert(boards.AnimeNexusPower_v1.data['7']==500)
+ local rows=ranks.top('Power');assert(rows[1].Name=='Player7' and rows[1].Score==500)
+ assert(ranks.top('Power')[1].Score==500 and boards.AnimeNexusPower_v1.reads==1)
+ now=301;assert(ranks.update(7,{Cards=5,Power=600,Bosses=2}))
+ assert(ranks.top('Power')[1].Score==600)
+ assert(not ranks.top('invalid'))
+end)
+test('ranking read outage serves cached scores without claiming fresh data',function()
+ local now=0;local broken=false;local board={}
+ function board:SetAsync()end
+ function board:GetSortedAsync()
+  if broken then error('outage') end
+  return {GetCurrentPage=function()return {{key='4',value=10}} end}
+ end
+ local service={GetOrderedDataStore=function()return board end}
+ local players={GetNameFromUserIdAsync=function()return 'Ada' end}
+ local ranks=Rankings.new(service,players,function()return now end)
+ assert(ranks.top('Cards')[1].Name=='Ada')
+ broken=true;now=61
+ local rows,notice=ranks.top('Cards');assert(rows and rows[1].Score==10 and notice)
+end)
+test('shared boss counts each player once across servers',function()
+ local store=fakeStore();local now=10
+ local service={GetDataStore=function()return store end}
+ local a=Coop.new(service,function()return now end)
+ local b=Coop.new(service,function()return now end)
+ assert(a.contribute(0,11,500)==500)
+ assert(a.status(0,11).Total==500)
+ assert(b.contribute(0,11,900)==500)
+ assert(b.contribute(0,12,1000)==1000)
+ local status=b.status(0,11)
+ assert(status.Total==1500 and status.Participants==2 and status.Contribution==500)
+ assert(not a.contribute(-1,11,500))
+ now=86400;assert(not a.contribute(0,15,300))
+ local ended=a.status(0,12);assert(ended.Ended and not ended.Complete and ended.Total==1500)
+ assert(ended.Contribution==1000)
+end)
+test('shared boss rejects incomplete reads and never grants a fictional win',function()
+ local store=fakeStore();local service={GetDataStore=function()return store end}
+ local coop=Coop.new(service,function()return 86400 end)
+ store.fail=true;assert(not coop.status(0,1))
+ store.fail=false;assert(coop.status(0,1).Total==0)
+ assert(not coop.status(-8,1))
+end)
+test('shared reward uses an atomic and idempotent profile transaction',function()
+ local store=fakeStore();local persistence=Persistence.new(store,'coop-owner',function()return 86400 end)
+ assert(persistence.load(22))
+ local payload={Coins=100,Essence=2,Crystals=0,Progression={CoopClaims={}},Receipts={}}
+ local reward={Coins=50,Essence=5,Crystals=0}
+ local first=persistence.claimCoop(22,payload,0,reward)
+ assert(first.Coins==150 and first.Progression.CoopClaims['0'])
+ local replay=persistence.claimCoop(22,payload,0,reward)
+ assert(replay.Coins==150 and replay.Essence==7)
 end)

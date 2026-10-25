@@ -98,7 +98,7 @@ for _,v in ipairs(expanded) do
  C.Cards[v[1]]={Name=v[2],Rarity=v[3],Power=v[4],Speed=v[5],Defense=v[6],Energy=v[7],Trait=v[8],Faction=v[9],Color=Color3.fromRGB(v[10],v[11],v[12])}
 end
 for id,card in pairs(C.Cards) do
- card.Identity={DisplayName=card.Name,ModelAssetId=0,PortraitAssetId=0,LicenseStatus="Original",PublicEligible=true}
+ card.Identity={DisplayName=card.Name,ModelName=id,PortraitAssetId=0,LicenseStatus="Original",PublicEligible=true}
 end
 C.WorldOrder={"hub","neon","astral"}
 C.Worlds={
@@ -119,6 +119,42 @@ C.Variants={
 }
 C.CardMaxLevel=100
 C.Formations={Line={Completed=0},Arc={Completed=5},Orbit={Completed=15}}
+C.MasteryMaxRank=10
+C.Awakening={Level=25,MasteryRank=5,BossWins=3,Essence=250,Crystals=12,PowerMultiplier=1.25}
+C.ExpeditionRoutes={
+ steady={Name="Steady Passage",Chance=1,Reward=1,Duration=1,Stat="Defense",Description="Reliable route that favors a durable team"},
+ swift={Name="Swift Passage",Chance=.92,Reward=1.2,Duration=.7,Stat="Speed",Description="Shorter journey with a speed advantage"},
+ perilous={Name="Perilous Passage",Chance=.72,Reward=1.65,Duration=1.15,Stat="Energy",Description="Hard route with greater rewards"},
+}
+C.Bosses.guardian.WeaknessTraits={Guardian=true,Bulwark=true,Bastion=true}
+C.Bosses.overseer.WeaknessTraits={Swift=true,Agile=true,Overdrive=true}
+C.Bosses.fracture.WeaknessTraits={Foresight=true,Destiny=true,Insight=true}
+C.Discoveries={
+ hub={"hub_archive","hub_observatory","hub_garden"},
+ neon={"neon_workshop","neon_transit","neon_signal"},
+ astral={"astral_vault","astral_spire","astral_echo"},
+}
+C.DiscoveryNames={
+ hub_archive="Rift Archive",hub_observatory="Fracture Observatory",hub_garden="Memory Garden",
+ neon_workshop="Signal Workshop",neon_transit="Skyrail Terminal",neon_signal="Lost Broadcast",
+ astral_vault="Starlit Vault",astral_spire="Celestial Spire",astral_echo="Origin Echo",
+}
+C.ChapterOrder={"fracture","neon","astral"}
+C.Chapters={
+ fracture={Name="Chapter I: The Fracture",World="hub",Completed=2,BossWins=0,Card="warden",Coins=400,Essence=15,Story="The sky above the Sanctuary cracked without a sound. Three memories remain among the groves; recover them to trace the first Riftwalker."},
+ neon={Name="Chapter II: Broken Signals",World="neon",Completed=8,BossWins=1,Card="gunslinger",Coins=750,Essence=35,Story="The Citadel's lights still answer a signal sent before the Fracture. Find its workshop, transit line and final broadcast to learn who opened the gate."},
+ astral={Name="Chapter III: The Origin Echo",World="astral",Completed=20,BossWins=4,Card="oracle",Coins=1800,Essence=75,Story="Beyond the city, an echo repeats every fate the Nexus might have followed. Reach the vault, the spire and the origin to restore the first memory."},
+}
+C.WeeklyEvents={
+ {Id="rift_memory",Name="Rift Memory Week",Description="Recover echoes of the first fracture",Card="frost"},
+ {Id="neon_signal",Name="Neon Signal Week",Description="Reconnect the broken city",Card="thunder"},
+ {Id="astral_convergence",Name="Astral Convergence Week",Description="Trace the origin of the Nexus",Card="comet"},
+}
+C.WeeklyMilestones={
+ {Id="first",Points=5,Coins=200,Essence=5},
+ {Id="second",Points=15,Coins=550,Essence=18},
+ {Id="final",Points=35,Coins=1000,Essence=40,EventCard=true},
+}
 C.QuestOrder={"first_steps","neon_path","astral_path"}
 C.Quests={
  first_steps={Name="Answer the Nexus",Stat="Completed",Target=2,Card="sentinel",Coins=150},
@@ -134,4 +170,12 @@ C.CollectionSets={
 C.RosterMode="Development" -- Public mode excludes unverified identities from summons; stored collections remain intact.
 C.IdentityOverrides={} -- Stable card ID -> identity fields; keep IDs to preserve collections.
 require(script.Parent:WaitForChild("NexusRoster")).apply(C)
+C.TraitEffects={}
+local function trait(route,bonus,names)
+ for _,name in ipairs(names) do C.TraitEffects[name]={Route=route,ChanceBonus=bonus} end
+end
+trait("steady",.05,{"Reliable","Guardian","Chill","Roots","Bastion","Renewal","Endurance","Bulwark","Fortress","Tidal"})
+trait("swift",.06,{"Swift","Momentum","Phase","Agile","Tracking","Precision","Flow"})
+trait("perilous",.06,{"Blazing","Surge","Eclipse","Legion","Foresight","Transcendent","Prism","Broadside","Overdrive","Destiny","Gravity","Strategy","Insight"})
+for _,card in pairs(C.Cards) do if not C.TraitEffects[card.Trait] then C.TraitEffects[card.Trait]={Route="steady",ChanceBonus=.03} end end
 return C

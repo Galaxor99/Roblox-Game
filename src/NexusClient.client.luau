@@ -25,7 +25,7 @@ local close=make('TextButton',main,{Position=UDim2.new(1,-48,0,12),Size=UDim2.fr
 close.Activated:Connect(function()main.Visible=false;toggle.Visible=true end)
 toggle.Activated:Connect(function()main.Visible=true;toggle.Visible=false end)
 local Config,Rules,Remote,state
-local tab='Overview';local locked=false;local render;local tabButtons={};local rarityFilter='All';local confirmSalvage=nil;local timers={};local searchQuery='';local page=1;local ownedOnly=false
+local tab='Overview';local locked=false;local render;local tabButtons={};local rarityFilter='All';local confirmSalvage=nil;local timers={};local searchQuery='';local page=1;local ownedOnly=false;local rankingMetric='Power';local rankingRows={};local coopDay=math.floor(os.time()/86400);local coopStatus
 local search=make('TextBox',main,{Position=UDim2.fromOffset(12,128),Size=UDim2.new(1,-24,0,36),PlaceholderText='Search name, universe, faction or trait…',ClearTextOnFocus=false,Text='',TextColor3=palette.text,PlaceholderColor3=palette.muted,BackgroundColor3=palette.surface,Font=Enum.Font.Gotham,TextSize=14,Visible=false});corner(search,7)
 local function text(msg,height,color)
  return make('TextLabel',panel,{Size=UDim2.new(1,-8,0,height or 42),Text=msg,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,TextColor3=color or palette.text,Font=Enum.Font.Gotham,TextSize=14})
@@ -57,6 +57,8 @@ local function reveal(id,variant)
  line(16,28,(variant~='Normal' and (variant..' • ') or '')..c.Rarity:upper(),16,c.Color)
  line(52,80,c.Name,27)
  line(140,34,Config.Factions[c.Faction or 'Rift'],15,palette.accent)
+ local portrait=c.Identity and c.Identity.PortraitAssetId or 0
+ if portrait>0 then make('ImageLabel',card,{Position=UDim2.fromOffset(82,104),Size=UDim2.fromOffset(96,96),Image='rbxassetid://'..portrait,BackgroundTransparency=1,ZIndex=23}) end
  line(180,44,'PWR '..c.Power..'  •  SPD '..c.Speed..'\nDEF '..c.Defense..'  •  EN '..c.Energy,13)
  line(245,30,'Tap anywhere to continue',12,palette.muted)
  TweenService:Create(card,TweenInfo.new(.3,Enum.EasingStyle.Back),{Size=UDim2.fromOffset(260,320)}):Play()
@@ -133,16 +135,23 @@ render=function(reset)
    local id=filtered[index];local c=Config.Cards[id];local count=state.Collection[id] or 0
    do
     heading((count>0 and c.Name or 'Undiscovered: '..c.Name)..' • '..c.Rarity)
-    text((c.Universe or 'Anime Nexus')..' • '..Config.Factions[c.Faction or 'Rift']..' • '..c.Trait..' • owned '..count..' • level '..(state.Progression.Levels[id] or 1)..' / '..Config.CardMaxLevel,58,c.Color)
+    local effect=Config.TraitEffects[c.Trait]
+    text((c.Universe or 'Anime Nexus')..' • '..Config.Factions[c.Faction or 'Rift']..' • '..c.Trait..' (+'..math.floor(effect.ChanceBonus*100)..'% '..effect.Route..' route) • owned '..count..' • level '..(state.Progression.Levels[id] or 1)..' / '..Config.CardMaxLevel,68,c.Color)
     if count>0 then
      text(string.format('PWR %d  SPD %d  DEF %d  ENERGY %d\nEffective expedition power: %d',c.Power,c.Speed,c.Defense,c.Energy,Rules.cardPower(state,id)),52)
      button(table.find(state.Favorites,id) and '★ REMOVE SHOWCASE FOLLOWER' or '☆ SHOWCASE FOLLOWER',function()action('Favorite',id)end)
      local variants={};for _,name in ipairs(Config.VariantOrder) do local n=(state.Progression.Variants[id] or {})[name] or 0;if n>0 then table.insert(variants,name..' ×'..n) end end
      text(table.concat(variants,' • '),42,palette.muted)
+     local rank,progress,nextRank=Rules.masteryRank(state,id)
+     text('Mastery '..rank..' / '..Config.MasteryMaxRank..(nextRank>0 and (' • '..progress..' / '..nextRank..' XP') or ' • complete')..(state.Progression.Awakened[id] and ' • AWAKENED' or ''),48,palette.accent)
      local normal=(state.Progression.Variants[id] or {}).Normal or 0
      local cost=Rules.upgradeCost(state,id)
      if cost then button('UPGRADE • '..cost.Coins..' coins + '..cost.Essence..' essence + 1 duplicate',function()action('Upgrade',id)end,count>1 and normal>0 and state.Coins>=cost.Coins and state.Essence>=cost.Essence)
      else text('MAXIMUM LEVEL',28,palette.accent) end
+     local recipe=Config.Awakening
+     if not state.Progression.Awakened[id] then
+      button('AWAKEN • Lv '..recipe.Level..' + mastery '..recipe.MasteryRank..' + '..recipe.BossWins..' boss wins + '..recipe.Essence..' essence + '..recipe.Crystals..' crystals',function()action('Awaken',id)end,(state.Progression.Levels[id] or 1)>=recipe.Level and rank>=recipe.MasteryRank and state.Progression.BossWins>=recipe.BossWins and state.Essence>=recipe.Essence and state.Crystals>=recipe.Crystals)
+     end
      button(confirmSalvage==id and 'CONFIRM RECYCLE • consumes one duplicate' or 'RECYCLE DUPLICATE → ESSENCE',function()
       if confirmSalvage==id then confirmSalvage=nil;action('Salvage',id) else confirmSalvage=id;render() end
      end,count>1 and normal>0)
@@ -152,7 +161,7 @@ render=function(reset)
   if page<pages then button('NEXT PAGE →',function()page+=1;render(true)end) end
  elseif tab=='Worlds' then
   heading('SHATTERED REALITIES')
-  text('Restore access to three realms through expedition milestones. World unlocks open new expedition routes and stat-based boss challenges.',70)
+  text('Restore three realms, visit their memory sites and finish the story chapters. World unlocks also open expedition routes and boss challenges.',70)
   for _,id in ipairs(Config.WorldOrder) do
    local w=Config.Worlds[id];heading(w.Name)
    if state.Progression.Worlds[id] then
@@ -162,6 +171,22 @@ render=function(reset)
     text(w.Completed..' expedition completions + '..w.Cost..' coins to unlock.',48)
     button('RESTORE WORLD GATE',function()action('UnlockWorld',id)end,state.Completed>=w.Completed and state.Coins>=w.Cost)
    end
+   local known=0
+   for _,memoryId in ipairs(Config.Discoveries[id]) do if state.Progression.Discoveries[memoryId] then known+=1 end end
+   text('Memories found: '..known..' / '..#Config.Discoveries[id]..' • '..table.concat((function()
+    local names={};for _,memoryId in ipairs(Config.Discoveries[id]) do table.insert(names,(state.Progression.Discoveries[memoryId] and '✓ ' or '○ ')..Config.DiscoveryNames[memoryId]) end
+    return names
+   end)(),' · '),72,palette.muted)
+  end
+  heading('THE FRACTURE STORY')
+  for _,chapterId in ipairs(Config.ChapterOrder) do
+   local chapter=Config.Chapters[chapterId];local known=0
+   for _,memoryId in ipairs(Config.Discoveries[chapter.World]) do if state.Progression.Discoveries[memoryId] then known+=1 end end
+   local ready=state.Progression.Worlds[chapter.World] and state.Completed>=chapter.Completed and state.Progression.BossWins>=chapter.BossWins and known==#Config.Discoveries[chapter.World]
+   heading(chapter.Name)
+   text(chapter.Story,75,palette.muted)
+   text('Explore '..Config.Worlds[chapter.World].Name..' • '..known..' / 3 memories • '..state.Completed..' / '..chapter.Completed..' expeditions • '..state.Progression.BossWins..' / '..chapter.BossWins..' boss wins',72)
+   button(state.Progression.Chapters[chapterId] and 'CHAPTER COMPLETED' or 'RESTORE CHAPTER • '..Config.Cards[chapter.Card].Name, function()action('Chapter',chapterId)end,ready and not state.Progression.Chapters[chapterId])
   end
  elseif tab=='Bosses' then
   heading('AUTOMATED BOSS CHALLENGES')
@@ -190,14 +215,18 @@ render=function(reset)
   heading('RIFT EXPEDITIONS • POWER '..state.TeamPower)
   text('Team power is locked in when you start. Expeditions finish while offline. Results are revealed when claimed.',60)
   if state.Expedition then
-   local e=Config.Expeditions[state.Expedition.Id];heading(e.Name)
+   local e=Config.Expeditions[state.Expedition.Id];heading(e.Name..' • '..Config.ExpeditionRoutes[state.Expedition.Route or 'steady'].Name)
    local t=text('',40);table.insert(timers,{Label=t,EndsAt=state.Expedition.EndsAt,Prefix='Ready to claim in '})
    button('CLAIM EXPEDITION',function()action('ClaimExpedition')end)
   else
    for _,id in ipairs({'scouting','citadel','abyss'}) do
     local e=Config.Expeditions[id];heading(e.Name)
-    text(string.format('%ds • recommended power %d • %d coins on success\nSuccess chance %.0f%% • requires %d completions',e.Duration,e.RequiredPower,e.Reward,math.clamp(state.TeamPower/e.RequiredPower,.2,1)*100,e.Unlock),60)
-    button('START EXPEDITION',function()action('StartExpedition',id)end,state.Completed>=e.Unlock and state.Progression.Worlds[e.World]==true)
+    for _,routeId in ipairs({'steady','swift','perilous'}) do
+     local route=Config.ExpeditionRoutes[routeId]
+     local plan=Rules.expeditionPlan(state,id,routeId)
+     text(string.format('%s • %ds • %d coins • %.0f%% success\n%s • +%.0f%% team trait bonus',route.Name,plan.Duration,plan.Reward,plan.Chance*100,route.Description,plan.TraitBonus*100),70)
+     button('START '..route.Name:upper(),function()action('StartExpedition',id..'|'..routeId)end,state.Completed>=e.Unlock and state.Progression.Worlds[e.World]==true)
+    end
    end
   end
  elseif tab=='Showcase' then
@@ -209,6 +238,86 @@ render=function(reset)
    button(name:upper()..' FORMATION • '..def.Completed..' completions',function()action('Formation',name)end,state.Completed>=def.Completed)
   end
   text('Models currently use colored procedural placeholders. Portrait and model asset IDs are configurable for future authored artwork.',68,palette.muted)
+ elseif tab=='Events' then
+  local event,_,endsAt=Rules.event(os.time())
+  heading(event.Name:upper())
+  text(event.Description..'. Earn points by claiming expeditions, boss challenges and daily rewards. A new event starts every seven UTC days.',76)
+  text('Weekly points: '..state.Progression.Weekly.Points,34,palette.accent)
+  local countdown=text('',42);table.insert(timers,{Label=countdown,EndsAt=endsAt,Prefix='Event rotates in '})
+  for _,milestone in ipairs(Config.WeeklyMilestones) do
+   heading(milestone.Points..' POINTS')
+   local reward=milestone.Coins..' coins + '..milestone.Essence..' essence'
+   if milestone.EventCard then reward=reward..' + '..Config.Cards[event.Card].Name end
+   text(reward,34,palette.muted)
+   local claimed=state.Progression.Weekly.Claims[milestone.Id]
+   button(claimed and 'CLAIMED THIS WEEK' or 'CLAIM WEEKLY REWARD',function()action('EventClaim',milestone.Id)end,not claimed and state.Progression.Weekly.Points>=milestone.Points)
+  end
+ elseif tab=='Co-op' then
+  heading('SHARED RIFT GUARDIAN')
+  text('Contribute your card team once per UTC day. Players across servers combine their power. Return after the day ends to claim the outcome. Claims stay available for seven days.',85)
+  button('TODAY • CONTRIBUTE',function()
+   coopDay=math.floor(os.time()/86400)
+   local result=request('CoopStatus',tostring(coopDay))
+   if result and result.Ok then coopStatus=result.Status end
+   render(true)
+  end)
+  for daysAgo=1,7 do
+   button(daysAgo==1 and 'YESTERDAY • REWARDS' or (daysAgo..' DAYS AGO'),function()
+    coopDay=math.floor(os.time()/86400)-daysAgo
+    local result=request('CoopStatus',tostring(coopDay))
+    if result and result.Ok then coopStatus=result.Status end
+    render(true)
+   end)
+  end
+  if coopStatus and coopStatus.Day==coopDay then
+   heading(coopStatus.Ended and 'COMPLETED DAY' or 'TODAY’S CHALLENGE')
+   text(coopStatus.Total..' / '..coopStatus.Target..' shared power • '..coopStatus.Participants..' contributors',45,palette.accent)
+   text('Your contribution: '..coopStatus.Contribution..' power',36)
+   if not coopStatus.Ended then
+    local countdown=text('',42);table.insert(timers,{Label=countdown,EndsAt=coopStatus.EndsAt,Prefix='Challenge ends in '})
+    button(coopStatus.Contribution>0 and 'YOUR TEAM HAS CONTRIBUTED' or 'CONTRIBUTE CURRENT TEAM',function()
+     local result=request('CoopContribute')
+     if result and result.Ok and result.Status then coopDay=result.Status.Day;coopStatus=result.Status end
+     render()
+    end,coopStatus.Contribution==0 and not state.SessionOnly)
+   else
+    text(coopStatus.Complete and 'Guardian defeated • 300 coins, 20 essence, 2 crystals' or 'Participation reward • 50 coins, 5 essence',50)
+    local claimed=state.Progression.CoopClaims[tostring(coopDay)]
+    button(claimed and 'ALREADY CLAIMED' or 'CLAIM SHARED REWARD',function()
+     local result=request('CoopClaim',tostring(coopDay))
+     if result and result.Ok then coopStatus=nil end
+     render()
+    end,coopStatus.Contribution>0 and not claimed and not state.SessionOnly)
+   end
+  else text('Select a day to view contributions and rewards.',42,palette.muted) end
+  button('REFRESH SHARED STATUS',function()
+   local result=request('CoopStatus',tostring(coopDay))
+   if result and result.Ok then coopStatus=result.Status end
+   render()
+  end)
+ elseif tab=='Rankings' then
+  heading('NEXUS RANKINGS • GLOBAL TOP 10')
+  text('Rankings update after successful profile saves. Your current server scores are shown on Roblox’s player list.',60)
+  for _,metric in ipairs({'Power','Cards','Bosses'}) do
+   button((metric==rankingMetric and '✓ ' or '')..metric:upper(),function()
+    rankingMetric=metric
+    local result=request('Leaderboard',metric)
+    if result and result.Ok then rankingRows[metric]=result.Rows end
+    render(true)
+   end)
+  end
+  local rows=rankingRows[rankingMetric]
+  if rows then
+   if #rows==0 then text('No saved scores yet.',42,palette.muted) end
+   for position,row in ipairs(rows) do
+    text(position..'.  '..row.Name..'    '..row.Score..' '..rankingMetric:lower(),42,position<=3 and palette.accent or palette.text)
+   end
+  else text('Select a ranking to load its top players.',42,palette.muted) end
+  button('REFRESH RANKINGS',function()
+   local result=request('Leaderboard',rankingMetric)
+   if result and result.Ok then rankingRows[rankingMetric]=result.Rows end
+   render()
+  end)
  elseif tab=='Goals' then
   heading('STORY QUESTS • GUARANTEED ALLIES')
   for _,id in ipairs(Config.QuestOrder) do
@@ -257,9 +366,21 @@ render=function(reset)
  end
  task.defer(function()if panel.Parent then panel.CanvasPosition=scroll end end)
 end
-for i,name in ipairs({'Overview','Packs','Cards','Team','Expeditions','Goals','Worlds','Bosses','Showcase','Potions','Luck'}) do
+for i,name in ipairs({'Overview','Packs','Cards','Team','Expeditions','Goals','Worlds','Bosses','Showcase','Events','Co-op','Rankings','Potions','Luck'}) do
  local b=make('TextButton',tabs,{Size=UDim2.fromOffset(110,36),Text=name,LayoutOrder=i,BackgroundColor3=palette.button,TextColor3=palette.text,TextSize=13,Font=Enum.Font.GothamBold,BorderSizePixel=0});corner(b,7);tabButtons[name]=b
- b.Activated:Connect(function()tab=name;confirmSalvage=nil;render(true)end)
+ b.Activated:Connect(function()
+  tab=name;confirmSalvage=nil
+  if name=='Rankings' and not rankingRows[rankingMetric] then
+   local result=request('Leaderboard',rankingMetric)
+   if result and result.Ok then rankingRows[rankingMetric]=result.Rows end
+  end
+  if name=='Co-op' then
+   coopDay=math.floor(os.time()/86400)
+   local result=request('CoopStatus',tostring(coopDay))
+   if result and result.Ok then coopStatus=result.Status end
+  end
+  render(true)
+ end)
 end
 local searchRevision=0
 search:GetPropertyChangedSignal('Text'):Connect(function()
