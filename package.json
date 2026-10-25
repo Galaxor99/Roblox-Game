@@ -1,0 +1,8 @@
+{
+  "name": "anime-nexus",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node tools/test.mjs"},
+  "devDependencies": {"luau-web": "1.4.0"}
+}

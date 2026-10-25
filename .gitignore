@@ -1,0 +1,4 @@
+node_modules/
+*.rbxl
+*.rbxlx
+.DS_Store

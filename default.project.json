@@ -1,0 +1,41 @@
+{
+  "name": "AnimeNexus",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "NexusConfig": {
+        "$path": "src/NexusConfig.luau"
+      },
+      "NexusRoster": {
+        "$path": "src/NexusRoster.luau"
+      },
+      "NexusProgression": {
+        "$path": "src/NexusProgression.luau"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "NexusServer": {
+        "$path": "src/NexusServer.server.luau",
+        "$className": "Script"
+      },
+      "NexusPersistence": {
+        "$path": "src/NexusPersistence.luau"
+      },
+      "NexusWorld": {
+        "$path": "src/NexusWorld.luau"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "NexusClient": {
+          "$path": "src/NexusClient.client.luau",
+          "$className": "LocalScript"
+        }
+      }
+    }
+  }
+}
