@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL = ROOT / 'reference/AnimeNexus_UI_Fixed_Studio_Build.original.rbxlx'
@@ -88,6 +89,15 @@ def build(output: Path) -> None:
     ET.ElementTree(root).write(output, encoding='utf-8', xml_declaration=True)
     validate(ET.parse(output).getroot())
     print(f'{output} ({output.stat().st_size} bytes; {len(SCRIPTS)} embedded scripts)')
+    zip_output = output.with_suffix('.zip')
+    member = zipfile.ZipInfo(output.name, (1980, 1, 1, 0, 0, 0))
+    member.compress_type = zipfile.ZIP_DEFLATED
+    with zipfile.ZipFile(zip_output, 'w') as archive:
+        archive.writestr(member, output.read_bytes())
+    with zipfile.ZipFile(zip_output) as archive:
+        if archive.namelist() != [output.name] or archive.read(output.name) != output.read_bytes():
+            raise ValueError('ZIP contents do not match the Roblox place')
+    print(f'{zip_output} ({zip_output.stat().st_size} bytes; direct-download package)')
 
 
 if __name__ == '__main__':
