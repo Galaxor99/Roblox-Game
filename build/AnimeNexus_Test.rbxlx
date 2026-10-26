@@ -1602,6 +1602,7 @@ toggle.Activated:Connect(function()main.Visible=true;toggle.Visible=false end)
 local Config,Rules,Visual,Remote,state
 local portraitCount=0
 local portraitErrors=0
+local duplicateAtlases=0
 local tab='Overview';local locked=false;local render;local tabButtons={};local rarityFilter='All';local confirmSalvage=nil;local timers={};local searchQuery='';local page=1;local ownedOnly=false;local rankingMetric='Power';local rankingRows={};local coopDay=math.floor(os.time()/86400);local coopStatus
 local search=make('TextBox',main,{Position=UDim2.fromOffset(12,128),Size=UDim2.new(1,-24,0,36),PlaceholderText='Search name, universe, faction or trait…',ClearTextOnFocus=false,Text='',TextColor3=palette.text,PlaceholderColor3=palette.muted,BackgroundColor3=palette.surface,Font=Enum.Font.Gotham,TextSize=14,Visible=false});corner(search,7)
 local function layout()
@@ -1635,13 +1636,23 @@ local function portrait(parent,id,size,x,y,z)
  local atlasId=(Config.PortraitAtlases or {})[identity.PortraitAtlas or 0] or 0
  local tile=make('Frame',parent,{Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(size,size),BackgroundColor3=c.Color,BorderSizePixel=0,ZIndex=z});corner(tile,8)
  make('UIGradient',tile,{Rotation=45,Color=ColorSequence.new(Color3.fromRGB(11,19,39),c.Color)})
- local initial=make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+3})
  if imageId&gt;0 or (cell and atlasId&gt;0) then
   local props={Size=UDim2.fromScale(1,1),BackgroundTransparency=1,ScaleType=Enum.ScaleType.Crop,Image='rbxassetid://'..(imageId&gt;0 and imageId or atlasId),ZIndex=z+2}
-  if imageId==0 then props.ImageRectSize=Vector2.new(418,418);props.ImageRectOffset=Vector2.new(((cell-1)%3)*418,math.floor((cell-1)/3)*418) end
   local image=make('ImageLabel',tile,props);corner(image,8)
-  initial.Visible=not image.IsLoaded
-  image:GetPropertyChangedSignal('IsLoaded'):Connect(function()initial.Visible=not image.IsLoaded end)
+  if imageId==0 then
+   local function cropCell()
+    local dimensions=image.ContentImageSize
+    if dimensions.X&lt;=0 or dimensions.Y&lt;=0 then return end
+    local width=math.floor(dimensions.X/3)
+    local height=math.floor(dimensions.Y/3)
+    image.ImageRectSize=Vector2.new(width,height)
+    image.ImageRectOffset=Vector2.new(((cell-1)%3)*width,math.floor((cell-1)/3)*height)
+   end
+   image:GetPropertyChangedSignal('ContentImageSize'):Connect(cropCell)
+   cropCell()
+  end
+ else
+  make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+1})
  end
  return tile
 end
@@ -1824,6 +1835,7 @@ render=function(reset)
  elseif tab=='Cards' then
   heading('COLLECTION • '..uniqueCount()..' discovered')
   if portraitCount==0 then text('Portrait setup: upload the PNG atlases, then paste their asset IDs into ReplicatedStorage → NexusPortraitAssets. See PORTRAIT_SETUP.md in the ZIP.',52,palette.muted) end
+  if duplicateAtlases&gt;0 then text(duplicateAtlases..' atlas slots reuse another image ID. Their card portraits cannot match until those IDs are corrected.',42,palette.muted) end
   if portraitErrors&gt;0 then text(portraitErrors..' portrait asset(s) could not load. Check Studio Output for their IDs and Roblox approval status.',42,palette.muted) end
   button('FILTER: '..rarityFilter..' • tap to cycle',function()
    local list={'All',table.unpack(Config.Rarities)};rarityFilter=list[(table.find(list,rarityFilter) or 1)%#list+1];confirmSalvage=nil;page=1;render(true)
@@ -2092,11 +2104,16 @@ task.spawn(function()
   local function applyPortraitIds()
    portraitCount=0
    portraitErrors=0
+   duplicateAtlases=0
    for index=1,23 do Config.PortraitAtlases[index]=0 end
+   local seenIds={}
    for index,part in ipairs(string.split(portraitIds.Value,',')) do
     if index&gt;23 then break end
     local id=tonumber(string.match(part,'^%s*(%d+)%s*$'))
-    if id and id&gt;0 then Config.PortraitAtlases[index]=id;portraitCount+=1 end
+    if id and id&gt;0 then
+     Config.PortraitAtlases[index]=id;portraitCount+=1
+     if seenIds[id] then duplicateAtlases+=1 else seenIds[id]=true end
+    end
    end
    if state and render then render() end
    local urls={};local seen={}
