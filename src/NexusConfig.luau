@@ -100,6 +100,21 @@ end
 for id,card in pairs(C.Cards) do
  card.Identity={DisplayName=card.Name,ModelName=id,PortraitAssetId=0,LicenseStatus="Original",PublicEligible=true}
 end
+-- Upload the four original-character atlases and set their Roblox image IDs.
+C.PortraitAtlases={}
+for index=1,23 do C.PortraitAtlases[index]=0 end
+local atlasOrder={
+ {"recruit","spark","sentinel","ember","frost","thunder","eclipse","comet","sovereign"},
+ {"tide","scout","warden","gunslinger","phantom","witch","titan","captain","archon"},
+ {"oracle","astral","seraph","weaver","leviathan","velocity","aegis","blade","dune"},
+ {"ocean","raven","sunforge","dream","moss","ghost","crown","lunar","atlas"},
+}
+for atlas,ids in ipairs(atlasOrder) do
+ for index,id in ipairs(ids) do
+  C.Cards[id].Identity.PortraitAtlas=atlas
+  C.Cards[id].Identity.PortraitAtlasCell=index
+ end
+end
 C.CardLore={
  recruit="The first volunteer to map the broken gates. Steady hands make dangerous routes feel possible.",
  spark="A courier who once crossed the Sanctuary in a heartbeat. Swift teams reach their destination sooner.",

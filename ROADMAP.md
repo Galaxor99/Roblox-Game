@@ -9,8 +9,8 @@ Status means **implemented in source**, not Roblox playtested or released. Nothi
 | Milestone | Status | Acceptance and remaining work |
 | --- | --- | --- |
 | Import supplied foundation | Implemented | Summons, existing collection, potions, luck, expeditions and favourites preserved in source. |
-| Configurable roster expansion | Implemented | 204 definitions, 30 franchise groups, stable IDs, identity overrides, summon eligibility metadata and collection descriptions. No custom franchise art/models. |
-| Summons and variants | Implemented | Six rarities, pity, normalized odds, 5 variant tiers; variant boundaries covered exhaustively. Reveal UI needs Studio review. |
+| Configurable roster expansion | Implemented; asset upload pending | 204 definitions, 30 franchise groups, stable IDs, identity overrides, summon eligibility metadata, and 23 original portrait atlases with one cell per card. Franchise rights and Roblox image asset IDs require review/configuration. |
+| Summons and variants | Implemented; Studio review pending | Six rarities, pity, normalized odds, 5 variant tiers; a cosmetic scrolling reveal lands on the server-awarded card. |
 | Collection interface | Implemented; engine review pending | Search name/universe/faction/trait, owned filter, rarity filter, 12 cards/page, close/reopen, small-screen layouts. |
 | Team building | Implemented and rule-tested | Manual five unique allies or auto-best team, four factions, 5%/15% synergy. |
 | Card advancement | Implemented and rule-tested | 100 levels, duplicate upgrades/recycling, variant preservation, last-copy protection, mastery ranks and deliberate awakening. Individual card serials remain future work. |

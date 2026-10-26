@@ -17,6 +17,7 @@ SCRIPTS = {
     ('ReplicatedStorage', 'NexusConfig'): ('ModuleScript', 'src/NexusConfig.luau'),
     ('ReplicatedStorage', 'NexusRoster'): ('ModuleScript', 'src/NexusRoster.luau'),
     ('ReplicatedStorage', 'NexusProgression'): ('ModuleScript', 'src/NexusProgression.luau'),
+    ('ReplicatedStorage', 'NexusSummonVisual'): ('ModuleScript', 'src/NexusSummonVisual.luau'),
     ('ServerScriptService', 'NexusServer'): ('Script', 'src/NexusServer.server.luau'),
     ('ServerScriptService', 'NexusPersistence'): ('ModuleScript', 'src/NexusPersistence.luau'),
     ('ServerScriptService', 'NexusWorld'): ('ModuleScript', 'src/NexusWorld.luau'),
@@ -94,8 +95,13 @@ def build(output: Path) -> None:
     member.compress_type = zipfile.ZIP_DEFLATED
     with zipfile.ZipFile(zip_output, 'w') as archive:
         archive.writestr(member, output.read_bytes())
+        for index in range(1, 24):
+            atlas = f'nexus_portraits_{index:02d}.png'
+            archive.write(ROOT / 'art' / atlas, atlas)
+        archive.write(ROOT / 'art/README.md', 'PORTRAIT_SETUP.md')
     with zipfile.ZipFile(zip_output) as archive:
-        if archive.namelist() != [output.name] or archive.read(output.name) != output.read_bytes():
+        expected = [output.name] + [f'nexus_portraits_{index:02d}.png' for index in range(1, 24)] + ['PORTRAIT_SETUP.md']
+        if archive.namelist() != expected or archive.read(output.name) != output.read_bytes():
             raise ValueError('ZIP contents do not match the Roblox place')
     print(f'{zip_output} ({zip_output.stat().st_size} bytes; direct-download package)')
 

@@ -31,6 +31,31 @@ test('pack weights total 100 and every rarity has candidates',function()
   end end
  end
 end)
+test('summon reel lands on the server winner and uses active pack cards',function()
+ local visual=SummonVisual.new(Config)
+ local rng={NextNumber=function(_,low,high)return (low+high)*.5 end,NextInteger=function(_,low,high)return high end}
+ for packId,pack in pairs(Config.Packs) do
+  local winner
+  for id,card in pairs(Config.Cards) do if card.Enabled~=false and (pack.Weights[card.Rarity] or 0)>0 then winner=id;break end end
+  local reel,target=visual.sequence(packId,winner,rng)
+  assert(#reel==38 and target==34 and reel[target]==winner)
+  for _,id in ipairs(reel) do local card=Config.Cards[id];assert(card.Enabled~=false and (pack.Weights[card.Rarity] or 0)>0) end
+ end
+ assert(not visual.sequence('missing','recruit',rng))
+ assert(not visual.sequence('basic','missing',rng))
+end)
+test('portrait atlases map every character once',function()
+ local seen={}
+ for id,card in pairs(Config.Cards) do
+  local cell=card.Identity.PortraitAtlasCell
+  local atlas=card.Identity.PortraitAtlas
+  assert(cell and atlas and atlas>=1 and atlas<=23 and cell>=1 and cell<=9)
+  local key=atlas..':'..cell;assert(not seen[key]);seen[key]=id
+ end
+ for atlas=1,4 do for cell=1,9 do assert(seen[atlas..':'..cell]) end end
+ for atlas=5,22 do for cell=1,9 do assert(seen[atlas..':'..cell]) end end
+ for cell=1,6 do assert(seen['23:'..cell]) end
+end)
 test('public roster mode disables unverified summons without deleting identities',function()
  local copy=table.clone(Config);copy.Cards={};copy.RosterMode='Public';roster.apply(copy)
  for _,c in pairs(copy.Cards) do assert(c.Enabled==false) end

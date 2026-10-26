@@ -35,5 +35,7 @@ The adapters do not represent a Roblox engine or real cloud storage. No visual, 
 11. In a separate published test experience, enable API access and verify migration, autosave, normal exit, server shutdown, fast rejoin, active-session rejection and recovery after the 180-second lease expiry.
 12. Check global OrderedDataStore rankings in a published test place, including a storage outage and fallback. Simulate save failures and ambiguous receipt commits before enabling any products. IDs remain zero and client purchase buttons are absent.
 13. Measure performance at the intended player count and collection size. Review the first-hour economy and replace placeholder art before considering release.
+14. Open each pack and verify the reel decelerates to the exact server-awarded card, including rare variants. Tap Skip and confirm it cannot award a second card.
+15. After importing portrait atlases and configuring their Roblox image asset IDs, inspect original and fiction cards, the pack reel, and the reveal. Confirm the atlas cells line up with the intended names on desktop and mobile.
 
 The `build/AnimeNexus_Test.rbxlx` export is a Studio test place generated from the unchanged original and current source. The cloud checks validate its XML and embedded sources; actual Studio loading and playtesting remain for the Studio checklist above.

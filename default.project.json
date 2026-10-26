@@ -12,6 +12,9 @@
       },
       "NexusProgression": {
         "$path": "src/NexusProgression.luau"
+      },
+      "NexusSummonVisual": {
+        "$path": "src/NexusSummonVisual.luau"
       }
     },
     "ServerScriptService": {

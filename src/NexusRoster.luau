@@ -38,7 +38,9 @@ function Roster.apply(config)
  local rarities={'Rare','Epic','Legendary','Mythic','Rare','Epic','Legendary','Celestial','Common','Rare'}
  local bases={Common=90,Rare=175,Epic=310,Legendary=600,Mythic=1050,Celestial=2200}
  local traits={'Precision','Momentum','Guardian','Foresight','Reliable','Surge'}
+ local portraitIndex=0
  for groupIndex,group in ipairs(groups) do for i,name in ipairs(group.Names) do
+  portraitIndex+=1
   local id='fiction_'..slug(group.Universe)..'_'..slug(name)
   local override=config.IdentityOverrides[id] or {}
   local eligible=override.PublicEligible==true
@@ -46,7 +48,7 @@ function Roster.apply(config)
    local rarity=override.Rarity or rarities[(i+groupIndex-2)%#rarities+1]
    local base=bases[rarity];local tilt=((i*7+groupIndex*3)%9-4)/20
    local display=override.DisplayName or name
-   config.Cards[id]={Enabled=config.RosterMode=='Development' or eligible,Name=display,Rarity=rarity,Power=math.floor(base*(1+tilt)),Speed=math.floor(base*(1-tilt)),Defense=math.floor(base*.85),Energy=math.floor(base*1.1),Trait=traits[(i-1)%#traits+1],Faction=group.Faction,Universe=group.Universe,Lore="An echo from "..group.Universe..". Its "..string.lower(traits[(i-1)%#traits+1]).." style can change an expedition.",Color=config.RarityColors[rarity],Identity={DisplayName=display,CanonicalName=name,Universe=group.Universe,ModelName=override.ModelName or id,PortraitAssetId=override.PortraitAssetId or 0,LicenseStatus=override.LicenseStatus or 'Unverified',PublicEligible=eligible}}
+   config.Cards[id]={Enabled=config.RosterMode=='Development' or eligible,Name=display,Rarity=rarity,Power=math.floor(base*(1+tilt)),Speed=math.floor(base*(1-tilt)),Defense=math.floor(base*.85),Energy=math.floor(base*1.1),Trait=traits[(i-1)%#traits+1],Faction=group.Faction,Universe=group.Universe,Lore="An echo from "..group.Universe..". Its "..string.lower(traits[(i-1)%#traits+1]).." style can change an expedition.",Color=config.RarityColors[rarity],Identity={DisplayName=display,CanonicalName=name,Universe=group.Universe,ModelName=override.ModelName or id,PortraitAssetId=override.PortraitAssetId or 0,PortraitAtlas=4+math.ceil(portraitIndex/9),PortraitAtlasCell=(portraitIndex-1)%9+1,LicenseStatus=override.LicenseStatus or 'Unverified',PublicEligible=eligible}}
   end
  end end
 end

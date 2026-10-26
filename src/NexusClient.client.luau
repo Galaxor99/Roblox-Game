@@ -7,33 +7,70 @@ local gui=Instance.new('ScreenGui');gui.Name='AnimeNexusGui';gui.ResetOnSpawn=fa
 local function make(class,parent,props)
  local o=Instance.new(class);for k,v in pairs(props or {}) do o[k]=v end;o.Parent=parent;return o
 end
-local palette={bg=Color3.fromRGB(14,18,31),surface=Color3.fromRGB(25,32,52),muted=Color3.fromRGB(159,177,202),accent=Color3.fromRGB(101,218,229),text=Color3.fromRGB(236,242,255),button=Color3.fromRGB(48,68,110)}
+local palette={bg=Color3.fromRGB(9,13,27),surface=Color3.fromRGB(20,27,48),muted=Color3.fromRGB(153,170,198),accent=Color3.fromRGB(93,225,236),text=Color3.fromRGB(241,246,255),button=Color3.fromRGB(39,53,86)}
 local function corner(o,r) make('UICorner',o,{CornerRadius=UDim.new(0,r or 10)}) end
 local main=make('Frame',gui,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(1,-24,1,-24),BackgroundColor3=palette.bg,BorderSizePixel=0});corner(main,16)
 make('UISizeConstraint',main,{MaxSize=Vector2.new(1100,850)})
-make('UIStroke',main,{Color=Color3.fromRGB(55,82,115),Thickness=1})
-make('TextLabel',main,{Position=UDim2.fromOffset(18,12),Size=UDim2.new(1,-75,0,28),Text='ANIME NEXUS',TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.GothamBlack,TextSize=23,TextColor3=palette.text,BackgroundTransparency=1})
+make('UIStroke',main,{Color=Color3.fromRGB(72,107,151),Thickness=2})
+make('UIGradient',main,{Rotation=90,Color=ColorSequence.new(Color3.fromRGB(19,30,58),palette.bg)})
+make('Frame',main,{Position=UDim2.fromOffset(18,70),Size=UDim2.new(1,-36,0,2),BackgroundColor3=palette.accent,BorderSizePixel=0})
+make('TextLabel',main,{Position=UDim2.fromOffset(18,10),Size=UDim2.new(1,-75,0,28),Text='✦  ANIME NEXUS',TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.GothamBlack,TextSize=21,TextColor3=palette.text,BackgroundTransparency=1})
 local wallet=make('TextLabel',main,{Position=UDim2.fromOffset(18,44),Size=UDim2.new(1,-36,0,24),Text='Connecting to the Nexus…',TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.Gotham,TextSize=13,TextColor3=palette.accent,BackgroundTransparency=1})
 local tabs=make('ScrollingFrame',main,{Position=UDim2.fromOffset(12,78),Size=UDim2.new(1,-24,0,42),BackgroundTransparency=1,BorderSizePixel=0,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.X,ScrollingDirection=Enum.ScrollingDirection.X,ScrollBarThickness=2})
 make('UIListLayout',tabs,{FillDirection=Enum.FillDirection.Horizontal,Padding=UDim.new(0,6),SortOrder=Enum.SortOrder.LayoutOrder})
-local panel=make('ScrollingFrame',main,{Position=UDim2.fromOffset(12,132),Size=UDim2.new(1,-24,1,-200),BackgroundColor3=palette.surface,BorderSizePixel=0,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollBarThickness=4});corner(panel)
+local sidebar=make('ScrollingFrame',main,{Position=UDim2.fromOffset(12,82),Size=UDim2.new(0,154,1,-148),BackgroundColor3=palette.surface,BorderSizePixel=0,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollingDirection=Enum.ScrollingDirection.Y,ScrollBarThickness=2,ScrollBarImageColor3=palette.accent,Visible=false});corner(sidebar,10)
+make('UIListLayout',sidebar,{Padding=UDim.new(0,5),SortOrder=Enum.SortOrder.LayoutOrder})
+make('UIPadding',sidebar,{PaddingTop=UDim.new(0,8),PaddingBottom=UDim.new(0,8),PaddingLeft=UDim.new(0,6),PaddingRight=UDim.new(0,6)})
+local panel=make('ScrollingFrame',main,{Position=UDim2.fromOffset(12,132),Size=UDim2.new(1,-24,1,-200),BackgroundColor3=palette.surface,BorderSizePixel=0,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollBarThickness=4,ScrollBarImageColor3=palette.accent});corner(panel)
+make('UIStroke',panel,{Color=Color3.fromRGB(52,74,109),Thickness=1})
 make('UIPadding',panel,{PaddingTop=UDim.new(0,12),PaddingBottom=UDim.new(0,18),PaddingLeft=UDim.new(0,12),PaddingRight=UDim.new(0,12)})
 make('UIListLayout',panel,{Padding=UDim.new(0,8),SortOrder=Enum.SortOrder.LayoutOrder})
 local toast=make('TextLabel',main,{Position=UDim2.new(0,18,1,-62),Size=UDim2.new(1,-36,0,50),Text='Welcome to the Nexus',TextWrapped=true,TextColor3=palette.accent,BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=13})
-local toggle=make('TextButton',gui,{Position=UDim2.fromOffset(12,12),Size=UDim2.fromOffset(145,38),Text='OPEN NEXUS',Visible=false,BackgroundColor3=palette.button,TextColor3=palette.text,Font=Enum.Font.GothamBold,TextSize=14});corner(toggle)
+local toggle=make('TextButton',gui,{Position=UDim2.fromOffset(12,12),Size=UDim2.fromOffset(145,38),Text='✦  OPEN NEXUS',Visible=false,BackgroundColor3=palette.button,TextColor3=palette.text,Font=Enum.Font.GothamBold,TextSize=13});corner(toggle)
 local close=make('TextButton',main,{Position=UDim2.new(1,-48,0,12),Size=UDim2.fromOffset(32,30),Text='×',TextSize=25,BackgroundTransparency=1,TextColor3=palette.muted})
 close.Activated:Connect(function()main.Visible=false;toggle.Visible=true end)
 toggle.Activated:Connect(function()main.Visible=true;toggle.Visible=false end)
-local Config,Rules,Remote,state
+local Config,Rules,Visual,Remote,state
 local tab='Overview';local locked=false;local render;local tabButtons={};local rarityFilter='All';local confirmSalvage=nil;local timers={};local searchQuery='';local page=1;local ownedOnly=false;local rankingMetric='Power';local rankingRows={};local coopDay=math.floor(os.time()/86400);local coopStatus
 local search=make('TextBox',main,{Position=UDim2.fromOffset(12,128),Size=UDim2.new(1,-24,0,36),PlaceholderText='Search name, universe, faction or trait…',ClearTextOnFocus=false,Text='',TextColor3=palette.text,PlaceholderColor3=palette.muted,BackgroundColor3=palette.surface,Font=Enum.Font.Gotham,TextSize=14,Visible=false});corner(search,7)
-local function text(msg,height,color)
- return make('TextLabel',panel,{Size=UDim2.new(1,-8,0,height or 42),Text=msg,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,TextColor3=color or palette.text,Font=Enum.Font.Gotham,TextSize=14})
+local function layout()
+ local wide=main.AbsoluteSize.X>=780
+ sidebar.Visible=wide;tabs.Visible=not wide
+ local x=wide and 178 or 12
+ local width=wide and -190 or -24
+ local y=wide and 82 or 132
+ search.Position=UDim2.fromOffset(x,y)
+ search.Size=UDim2.new(1,width,0,36)
+ panel.Position=UDim2.fromOffset(x,y+(tab=='Cards' and 44 or 0))
+ panel.Size=UDim2.new(1,width,1,-(y+(tab=='Cards' and 112 or 68)))
 end
-local function heading(msg) return text(msg,32,palette.accent) end
+main:GetPropertyChangedSignal('AbsoluteSize'):Connect(layout)
+local function text(msg,height,color)
+ return make('TextLabel',panel,{Size=UDim2.new(1,-8,0,height or 42),Text=msg,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,BackgroundTransparency=1,TextColor3=color or palette.text,Font=Enum.Font.Gotham,TextSize=12})
+end
+local function heading(msg) local label=text(msg,28,palette.accent);label.Font=Enum.Font.GothamBold;label.TextSize=12;return label end
 local function button(msg,callback,enabled)
- local b=make('TextButton',panel,{Size=UDim2.new(1,-8,0,42),Text=msg,TextWrapped=true,BackgroundColor3=enabled==false and Color3.fromRGB(46,49,62) or palette.button,TextColor3=enabled==false and palette.muted or palette.text,Font=Enum.Font.GothamBold,TextSize=13,AutoButtonColor=enabled~=false,BorderSizePixel=0});corner(b,7)
+ local b=make('TextButton',panel,{Size=UDim2.new(1,-8,0,38),Text=msg,TextWrapped=true,BackgroundColor3=enabled==false and Color3.fromRGB(36,40,56) or palette.button,TextColor3=enabled==false and palette.muted or palette.text,Font=Enum.Font.GothamBold,TextSize=12,AutoButtonColor=enabled~=false,BorderSizePixel=0});corner(b,7)
+ if enabled~=false then
+  b.MouseEnter:Connect(function()TweenService:Create(b,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(56,91,137)}):Play()end)
+  b.MouseLeave:Connect(function()TweenService:Create(b,TweenInfo.new(.12),{BackgroundColor3=palette.button}):Play()end)
+ end
  b.Activated:Connect(function()if enabled~=false then callback() end end);return b
+end
+local function portrait(parent,id,size,x,y,z)
+ local c=Config.Cards[id];local identity=c.Identity or {}
+ local imageId=identity.PortraitAssetId or 0
+ local cell=identity.PortraitAtlasCell
+ local atlasId=(Config.PortraitAtlases or {})[identity.PortraitAtlas or 0] or 0
+ if imageId>0 or (cell and atlasId>0) then
+  local props={Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(size,size),BackgroundColor3=c.Color,BorderSizePixel=0,ScaleType=Enum.ScaleType.Crop,Image='rbxassetid://'..(imageId>0 and imageId or atlasId),ZIndex=z}
+  if imageId==0 then props.ImageRectSize=Vector2.new(418,418);props.ImageRectOffset=Vector2.new(((cell-1)%3)*418,math.floor((cell-1)/3)*418) end
+  local image=make('ImageLabel',parent,props);corner(image,8);return image
+ end
+ local tile=make('Frame',parent,{Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(size,size),BackgroundColor3=c.Color,BorderSizePixel=0,ZIndex=z});corner(tile,8)
+ make('UIGradient',tile,{Rotation=45,Color=ColorSequence.new(Color3.fromRGB(11,19,39),c.Color)})
+ make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+1})
+ return tile
 end
 local function request(action,arg)
  if locked or not Remote then return nil end
@@ -57,16 +94,60 @@ local function reveal(id,variant)
  line(16,28,(variant~='Normal' and (variant..' • ') or '')..c.Rarity:upper(),16,c.Color)
  line(52,80,c.Name,27)
  line(140,34,Config.Factions[c.Faction or 'Rift'],15,palette.accent)
- local portrait=c.Identity and c.Identity.PortraitAssetId or 0
- if portrait>0 then make('ImageLabel',card,{Position=UDim2.fromOffset(82,104),Size=UDim2.fromOffset(96,96),Image='rbxassetid://'..portrait,BackgroundTransparency=1,ZIndex=23}) end
+ portrait(card,id,96,82,101,23)
  line(180,44,'PWR '..c.Power..'  •  SPD '..c.Speed..'\nDEF '..c.Defense..'  •  EN '..c.Energy,13)
  line(245,30,'Tap anywhere to continue',12,palette.muted)
  TweenService:Create(card,TweenInfo.new(.3,Enum.EasingStyle.Back),{Size=UDim2.fromOffset(260,320)}):Play()
  cover.Activated:Connect(function()cover:Destroy()end)
 end
+local opening=false
+local function spin(packId,winnerId,variant)
+ local ids,target=Visual.sequence(packId,winnerId,Random.new())
+ if not ids then reveal(winnerId,variant);return end
+ opening=true
+ local cover=make('Frame',gui,{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(4,8,18),BackgroundTransparency=.08,ZIndex=30})
+ local box=make('Frame',cover,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(.92,0,0,270),BackgroundColor3=palette.surface,BorderSizePixel=0,ZIndex=31});corner(box,18)
+ make('UISizeConstraint',box,{MaxSize=Vector2.new(690,270)})
+ make('UIStroke',box,{Color=palette.accent,Thickness=2})
+ make('TextLabel',box,{Position=UDim2.fromOffset(18,12),Size=UDim2.new(1,-36,0,28),Text='RIFT OPENING',TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.GothamBlack,TextSize=19,TextColor3=palette.text,BackgroundTransparency=1,ZIndex=32})
+ local view=make('Frame',box,{Position=UDim2.fromOffset(12,50),Size=UDim2.new(1,-24,0,144),ClipsDescendants=true,BackgroundColor3=palette.bg,BorderSizePixel=0,ZIndex=32});corner(view,12)
+ local track=make('Frame',view,{Size=UDim2.fromOffset(#ids*108,136),Position=UDim2.fromOffset(0,4),BackgroundTransparency=1,ZIndex=33})
+ for index,id in ipairs(ids) do
+  local c=Config.Cards[id];local tile=make('Frame',track,{Position=UDim2.fromOffset((index-1)*108,0),Size=UDim2.fromOffset(100,136),BackgroundColor3=palette.surface,BorderSizePixel=0,ZIndex=34});corner(tile,9)
+  make('UIStroke',tile,{Color=c.Color,Thickness=2})
+  portrait(tile,id,88,6,5,35)
+  make('TextLabel',tile,{Position=UDim2.fromOffset(4,96),Size=UDim2.fromOffset(92,34),Text=c.Name,TextWrapped=true,TextColor3=palette.text,TextSize=11,Font=Enum.Font.GothamBold,BackgroundTransparency=1,ZIndex=36})
+ end
+ make('Frame',box,{AnchorPoint=Vector2.new(.5,0),Position=UDim2.new(.5,0,0,46),Size=UDim2.fromOffset(4,152),BackgroundColor3=palette.accent,BorderSizePixel=0,ZIndex=40})
+ local status=make('TextLabel',box,{Position=UDim2.fromOffset(14,205),Size=UDim2.new(1,-145,0,44),Text='Opening the rift…',TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true,Font=Enum.Font.GothamBold,TextSize=15,TextColor3=palette.text,BackgroundTransparency=1,ZIndex=33})
+ local skip=make('TextButton',box,{Position=UDim2.new(1,-116,0,209),Size=UDim2.fromOffset(100,35),Text='SKIP',Font=Enum.Font.GothamBold,TextSize=13,TextColor3=palette.text,BackgroundColor3=palette.button,BorderSizePixel=0,ZIndex=34});corner(skip,8)
+ task.defer(function()
+  if not cover.Parent then return end
+  local width=view.AbsoluteSize.X
+  local start=width*.5-50
+  local finish=width*.5-50-(target-1)*108
+  track.Position=UDim2.fromOffset(start,4)
+  local done=false;local tween
+  local function complete()
+   if done then return end;done=true
+   if tween then tween:Cancel() end
+   track.Position=UDim2.fromOffset(finish,4)
+   local winner=Config.Cards[winnerId]
+   status.Text=(variant~='Normal' and variant..' • ' or '')..winner.Name..'  ·  '..winner.Rarity
+   status.TextColor3=winner.Color
+   skip.Text='CLOSE'
+  end
+  tween=TweenService:Create(track,TweenInfo.new(5.4,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Position=UDim2.fromOffset(finish,4)})
+  tween.Completed:Connect(complete);tween:Play()
+  skip.Activated:Connect(function()
+   if not done then complete() else cover:Destroy();opening=false end
+  end)
+ end)
+end
 local function action(name,arg)
+ if name=='Open' and opening then return end
  local r=request(name,arg)
- if r and r.Ok and name=='Open' then reveal(r.Id,r.Variant or 'Normal') end
+ if r and r.Ok and name=='Open' then spin(arg,r.Id,r.Variant or 'Normal') end
  if render then render() end
 end
 local function uniqueCount()
@@ -79,42 +160,85 @@ local function orderedCards()
   if ra~=rb then return ra>rb end;return Config.Cards[a].Name<Config.Cards[b].Name
  end);return ids
 end
+local function inspectCard(id)
+ local c=Config.Cards[id];local count=state.Collection[id] or 0
+ local cover=make('TextButton',gui,{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(3,7,16),BackgroundTransparency=.18,Text='',ZIndex=20})
+ local detail=make('ScrollingFrame',cover,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(.9,0,.86,0),BackgroundColor3=palette.surface,BorderSizePixel=0,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollBarThickness=4,ZIndex=21});corner(detail,14)
+ make('UISizeConstraint',detail,{MaxSize=Vector2.new(420,620)})
+ make('UIPadding',detail,{PaddingTop=UDim.new(0,14),PaddingBottom=UDim.new(0,16),PaddingLeft=UDim.new(0,14),PaddingRight=UDim.new(0,14)})
+ make('UIListLayout',detail,{Padding=UDim.new(0,8),SortOrder=Enum.SortOrder.LayoutOrder})
+ local function label(value,height,color,size)
+  return make('TextLabel',detail,{Size=UDim2.new(1,-8,0,height),Text=value,TextWrapped=true,TextColor3=color or palette.text,Font=Enum.Font.GothamMedium,TextSize=size or 13,BackgroundTransparency=1,ZIndex=22})
+ end
+ local function choice(value,fn,enabled)
+  local b=make('TextButton',detail,{Size=UDim2.new(1,-8,0,37),Text=value,TextWrapped=true,TextColor3=enabled==false and palette.muted or palette.text,Font=Enum.Font.GothamBold,TextSize=12,BackgroundColor3=enabled==false and Color3.fromRGB(34,39,58) or palette.button,BorderSizePixel=0,ZIndex=22});corner(b,7)
+  b.Activated:Connect(function()if enabled~=false then cover:Destroy();fn() end end)
+ end
+ label(c.Name,32,c.Color,21)
+ label(c.Rarity:upper()..'  ·  '..(c.Universe or 'Anime Nexus')..'  ·  '..Config.Factions[c.Faction or 'Rift'],32,palette.accent,12)
+ local art=make('Frame',detail,{Size=UDim2.new(1,-8,0,168),BackgroundColor3=palette.bg,BorderSizePixel=0,ZIndex=22});corner(art,9)
+ local portraitTile=portrait(art,id,160,0,4,23);portraitTile.AnchorPoint=Vector2.new(.5,0);portraitTile.Position=UDim2.new(.5,0,0,4)
+ label(c.Lore or '',46,palette.muted,12)
+ label('PWR '..c.Power..'    SPD '..c.Speed..'    DEF '..c.Defense..'    EN '..c.Energy,42,palette.text,12)
+ if count>0 then
+  label('Owned ×'..count..'    ·    Level '..(state.Progression.Levels[id] or 1)..' / '..Config.CardMaxLevel..'    ·    Team power '..Rules.cardPower(state,id),36)
+  choice(table.find(state.Favorites,id) and '★ REMOVE FROM SHOWCASE' or '☆ ADD TO SHOWCASE',function()action('Favorite',id)end)
+  local cost=Rules.upgradeCost(state,id);local normal=(state.Progression.Variants[id] or {}).Normal or 0
+  if cost then choice('⬆ UPGRADE · '..cost.Coins..' coins · '..cost.Essence..' essence',function()action('Upgrade',id)end,count>1 and normal>0 and state.Coins>=cost.Coins and state.Essence>=cost.Essence) end
+  local rank,progress,nextRank=Rules.masteryRank(state,id)
+  label('Mastery '..rank..' / '..Config.MasteryMaxRank..(nextRank>0 and ' · '..progress..' / '..nextRank..' XP' or ' · complete'),32,palette.accent)
+  if not state.Progression.Awakened[id] then
+   local recipe=Config.Awakening
+   choice('✦ AWAKEN · Lv '..recipe.Level..' · Mastery '..recipe.MasteryRank, function()action('Awaken',id)end,(state.Progression.Levels[id] or 1)>=recipe.Level and rank>=recipe.MasteryRank and state.Progression.BossWins>=recipe.BossWins and state.Essence>=recipe.Essence and state.Crystals>=recipe.Crystals)
+  end
+  choice(confirmSalvage==id and 'CONFIRM RECYCLE DUPLICATE' or '♻ RECYCLE DUPLICATE',function()
+   if confirmSalvage==id then confirmSalvage=nil;action('Salvage',id) else confirmSalvage=id;inspectCard(id) end
+  end,count>1 and normal>0)
+ end
+ choice('CLOSE',function()end)
+ cover.Activated:Connect(function()cover:Destroy()end)
+end
 render=function(reset)
  local scroll=reset and Vector2.zero or panel.CanvasPosition
  timers={}
  search.Visible=tab=='Cards'
- panel.Position=UDim2.fromOffset(12,tab=='Cards' and 176 or 132)
- panel.Size=UDim2.new(1,-24,1,tab=='Cards' and -244 or -200)
+ layout()
  for _,c in ipairs(panel:GetChildren()) do if c:IsA('GuiObject') then c:Destroy() end end
- for name,b in pairs(tabButtons) do b.BackgroundColor3=name==tab and Color3.fromRGB(46,108,124) or palette.button end
+ for name,buttons in pairs(tabButtons) do
+  for _,b in ipairs(buttons) do
+   b.BackgroundColor3=name==tab and Color3.fromRGB(40,103,127) or palette.button
+   b.TextColor3=name==tab and palette.accent or palette.text
+  end
+ end
  if not state then text('Loading your collection. You can explore the hub when the game connects.',70);return end
  wallet.Text=string.format('◈ %d coins   ·   %d essence   ·   %d crystals%s',state.Coins,state.Essence,state.Crystals,state.SessionOnly and '   ·   UNSAVED TEST SESSION' or '')
  if tab=='Overview' then
-  heading('YOUR NEXT ADVENTURE')
-  text('Summon allies, build a faction team and send them through the rifts. Recycle duplicates or use them to upgrade your strongest cards.',70)
-  text(string.format('%d / %d cards discovered  •  %d summons  •  %d expeditions',uniqueCount(),#orderedCards(),state.Rolls,state.Completed),50)
-  heading('DAILY REWARD')
-  text('Day '..state.Progression.DailyStreak..' of the seven-day cycle. Claim once per UTC day; consecutive days improve rewards.',54)
+  heading('RIFTWALKER DASHBOARD')
+  text(string.format('%d / %d discovered     ◈ %d summons     ◆ %d expeditions',uniqueCount(),#orderedCards(),state.Rolls,state.Completed),34)
+  for _,shortcut in ipairs({{'✦  OPEN PACKS','Packs'},{'▣  MY CARDS','Cards'},{'◆  EXPEDITIONS','Expeditions'},{'★  SHOWCASE','Showcase'}}) do
+   button(shortcut[1]..'     →',function()tab=shortcut[2];render(true)end)
+  end
+  heading('DAILY DROP · DAY '..state.Progression.DailyStreak)
   local claimed=state.Progression.DailyDay>=math.floor(os.time()/86400)
-  button(claimed and 'CLAIMED • resets at 00:00 UTC' or 'CLAIM DAILY REWARD',function()action('Daily')end,not claimed)
-  heading('GETTING STARTED')
-  text('1. Open Rift Packs with your starter coins.\n2. Visit Team and choose up to five unique allies.\n3. Start Rift Scouting, then claim its rewards.\n4. Claim Goals and spend essence on upgrades or potions.',100)
-  text('Everything in this release is earned through play. Card art and character models are placeholders.',54,palette.muted)
+  button(claimed and 'CLAIMED · resets at 00:00 UTC' or 'CLAIM DAILY REWARD  →',function()action('Daily')end,not claimed)
+  text('Build a squad, send expeditions, and collect rare variants. Your favourites appear behind your avatar.',50,palette.muted)
  elseif tab=='Packs' then
-  heading('SUMMON THROUGH THE RIFT')
-  text('Odds include your current luck. Individual cards in a rarity are equally likely. At pity, Legendary / Mythic / Celestial tiers are equally likely (one third each).',76)
+  heading('SUMMON GATE')
+  text('Choose a pack. Odds and pity update with your current luck.',34,palette.muted)
   for _,id in ipairs({'basic','elite','cosmic'}) do
-   local pack=Config.Packs[id];heading(pack.Name..' • '..pack.Price..' coins')
-   local odds=state.Odds[id] or pack.Weights;local lines={}
-   for _,rarity in ipairs(Config.Rarities) do
-    if (odds[rarity] or 0)>0 then
-     local n=0;for _,c in pairs(Config.Cards) do if c.Rarity==rarity and c.Enabled~=false then n+=1 end end
-     table.insert(lines,string.format('%s %.3f%% · each card %.3f%%',rarity,odds[rarity],odds[rarity]/n))
+   local pack=Config.Packs[id];heading(pack.Name:upper()..'  ·  '..pack.Price..' COINS')
+   text(pack.Description..'   •   Legendary+ pity in '..(pack.Pity-(state.Pity[id] or 0))..' pulls',40,palette.muted)
+   button('✦  OPEN '..pack.Name:upper()..'     →',function()action('Open',id)end,state.Coins>=pack.Price)
+   button('VIEW '..pack.Name:upper()..' ODDS',function()
+    local odds=state.Odds[id] or pack.Weights;local lines={}
+    for _,rarity in ipairs(Config.Rarities) do
+     if (odds[rarity] or 0)>0 then
+      local n=0;for _,c in pairs(Config.Cards) do if c.Rarity==rarity and c.Enabled~=false then n+=1 end end
+      table.insert(lines,string.format('%s %.3f%% · each card %.3f%%',rarity,odds[rarity],odds[rarity]/n))
+     end
     end
-   end
-   text(table.concat(lines,'\n'),#lines*22,palette.muted)
-   text('Legendary+ guarantee in '..(pack.Pity-(state.Pity[id] or 0))..' pulls. Any Legendary+ resets this pack’s counter.',50)
-   button('OPEN '..pack.Name:upper(),function()action('Open',id)end,state.Coins>=pack.Price)
+    toast.Text=table.concat(lines,'   |   ')
+   end)
   end
  elseif tab=='Cards' then
   heading('COLLECTION • '..uniqueCount()..' discovered')
@@ -133,31 +257,12 @@ render=function(reset)
   if page>1 then button('← PREVIOUS PAGE',function()page-=1;render(true)end) end
   for index=(page-1)*12+1,math.min(page*12,#filtered) do
    local id=filtered[index];local c=Config.Cards[id];local count=state.Collection[id] or 0
-   do
-    heading((count>0 and c.Name or 'Undiscovered: '..c.Name)..' • '..c.Rarity)
-    local effect=Config.TraitEffects[c.Trait]
-    text((c.Universe or 'Anime Nexus')..' • '..Config.Factions[c.Faction or 'Rift']..' • '..c.Trait..' (+'..math.floor(effect.ChanceBonus*100)..'% '..effect.Route..' route) • owned '..count..' • level '..(state.Progression.Levels[id] or 1)..' / '..Config.CardMaxLevel,68,c.Color)
-    text(c.Lore or '',52,palette.muted)
-    if count>0 then
-     text(string.format('PWR %d  SPD %d  DEF %d  ENERGY %d\nEffective expedition power: %d',c.Power,c.Speed,c.Defense,c.Energy,Rules.cardPower(state,id)),52)
-     button(table.find(state.Favorites,id) and '★ REMOVE SHOWCASE FOLLOWER' or '☆ SHOWCASE FOLLOWER',function()action('Favorite',id)end)
-     local variants={};for _,name in ipairs(Config.VariantOrder) do local n=(state.Progression.Variants[id] or {})[name] or 0;if n>0 then table.insert(variants,name..' ×'..n) end end
-     text(table.concat(variants,' • '),42,palette.muted)
-     local rank,progress,nextRank=Rules.masteryRank(state,id)
-     text('Mastery '..rank..' / '..Config.MasteryMaxRank..(nextRank>0 and (' • '..progress..' / '..nextRank..' XP') or ' • complete')..(state.Progression.Awakened[id] and ' • AWAKENED' or ''),48,palette.accent)
-     local normal=(state.Progression.Variants[id] or {}).Normal or 0
-     local cost=Rules.upgradeCost(state,id)
-     if cost then button('UPGRADE • '..cost.Coins..' coins + '..cost.Essence..' essence + 1 duplicate',function()action('Upgrade',id)end,count>1 and normal>0 and state.Coins>=cost.Coins and state.Essence>=cost.Essence)
-     else text('MAXIMUM LEVEL',28,palette.accent) end
-     local recipe=Config.Awakening
-     if not state.Progression.Awakened[id] then
-      button('AWAKEN • Lv '..recipe.Level..' + mastery '..recipe.MasteryRank..' + '..recipe.BossWins..' boss wins + '..recipe.Essence..' essence + '..recipe.Crystals..' crystals',function()action('Awaken',id)end,(state.Progression.Levels[id] or 1)>=recipe.Level and rank>=recipe.MasteryRank and state.Progression.BossWins>=recipe.BossWins and state.Essence>=recipe.Essence and state.Crystals>=recipe.Crystals)
-     end
-     button(confirmSalvage==id and 'CONFIRM RECYCLE • consumes one duplicate' or 'RECYCLE DUPLICATE → ESSENCE',function()
-      if confirmSalvage==id then confirmSalvage=nil;action('Salvage',id) else confirmSalvage=id;render() end
-     end,count>1 and normal>0)
-    end
-   end
+   local tile=make('TextButton',panel,{Size=UDim2.new(1,-8,0,80),Text='',BackgroundColor3=palette.bg,BorderSizePixel=0});corner(tile,9)
+   make('UIStroke',tile,{Color=c.Color,Thickness=1,Transparency=.35})
+   portrait(tile,id,68,6,6,2)
+   make('TextLabel',tile,{Position=UDim2.fromOffset(84,7),Size=UDim2.new(1,-94,0,26),Text=c.Name,TextXAlignment=Enum.TextXAlignment.Left,TextTruncate=Enum.TextTruncate.AtEnd,TextColor3=palette.text,Font=Enum.Font.GothamBold,TextSize=15,BackgroundTransparency=1})
+   make('TextLabel',tile,{Position=UDim2.fromOffset(84,35),Size=UDim2.new(1,-94,0,34),Text=c.Rarity:upper()..'  ·  '..c.Trait..'  ·  '..(count>0 and ('OWNED ×'..count) or 'UNDISCOVERED')..'   →',TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true,TextColor3=c.Color,Font=Enum.Font.GothamMedium,TextSize=11,BackgroundTransparency=1})
+   tile.Activated:Connect(function()inspectCard(id)end)
   end
   if page<pages then button('NEXT PAGE →',function()page+=1;render(true)end) end
  elseif tab=='Worlds' then
@@ -238,7 +343,7 @@ render=function(reset)
    local def=Config.Formations[name]
    button(name:upper()..' FORMATION • '..def.Completed..' completions',function()action('Formation',name)end,state.Completed>=def.Completed)
   end
-  text('Models currently use colored procedural placeholders. Portrait and model asset IDs are configurable for future authored artwork.',68,palette.muted)
+  text('Favourite displays follow your avatar. Portrait artwork appears in cards and summons after the atlas asset IDs are set.',56,palette.muted)
  elseif tab=='Events' then
   local event,_,endsAt=Rules.event(os.time())
   heading(event.Name:upper())
@@ -367,8 +472,12 @@ render=function(reset)
  end
  task.defer(function()if panel.Parent then panel.CanvasPosition=scroll end end)
 end
+local tabIcons={Overview='⌂',Packs='✦',Cards='▣',Team='◆',Expeditions='➤',Goals='✓',Worlds='◈',Bosses='♜',Showcase='★',Events='◉',['Co-op']='✚',Rankings='♛',Potions='⚗',Luck='✧'}
 for i,name in ipairs({'Overview','Packs','Cards','Team','Expeditions','Goals','Worlds','Bosses','Showcase','Events','Co-op','Rankings','Potions','Luck'}) do
- local b=make('TextButton',tabs,{Size=UDim2.fromOffset(110,36),Text=name,LayoutOrder=i,BackgroundColor3=palette.button,TextColor3=palette.text,TextSize=13,Font=Enum.Font.GothamBold,BorderSizePixel=0});corner(b,7);tabButtons[name]=b
+ tabButtons[name]={}
+ for _,nav in ipairs({tabs,sidebar}) do
+ local b=make('TextButton',nav,{Size=nav==sidebar and UDim2.new(1,-12,0,37) or UDim2.fromOffset(name=='Expeditions' and 130 or 108,36),Text=(tabIcons[name] or '•')..'  '..name,LayoutOrder=i,BackgroundColor3=palette.button,TextColor3=palette.text,TextSize=12,Font=Enum.Font.GothamBold,BorderSizePixel=0});corner(b,8);table.insert(tabButtons[name],b)
+ make('UIStroke',b,{Color=Color3.fromRGB(61,80,117),Thickness=1})
  b.Activated:Connect(function()
   tab=name;confirmSalvage=nil
   if name=='Rankings' and not rankingRows[rankingMetric] then
@@ -382,6 +491,7 @@ for i,name in ipairs({'Overview','Packs','Cards','Team','Expeditions','Goals','W
   end
   render(true)
  end)
+ end
 end
 local searchRevision=0
 search:GetPropertyChangedSignal('Text'):Connect(function()
@@ -390,9 +500,9 @@ search:GetPropertyChangedSignal('Text'):Connect(function()
 end)
 render()
 task.spawn(function()
- local configModule=RS:WaitForChild('NexusConfig',20);local rulesModule=RS:WaitForChild('NexusProgression',20);local remotes=RS:WaitForChild('NexusRemotes',20)
- if not configModule or not rulesModule or not remotes then toast.Text='Game modules are missing. Check the source installation guide.';return end
- local ok,err=pcall(function()Config=require(configModule);Rules=require(rulesModule).new(Config)end)
+ local configModule=RS:WaitForChild('NexusConfig',20);local rulesModule=RS:WaitForChild('NexusProgression',20);local visualModule=RS:WaitForChild('NexusSummonVisual',20);local remotes=RS:WaitForChild('NexusRemotes',20)
+ if not configModule or not rulesModule or not visualModule or not remotes then toast.Text='Game modules are missing. Check the source installation guide.';return end
+ local ok,err=pcall(function()Config=require(configModule);Rules=require(rulesModule).new(Config);Visual=require(visualModule).new(Config)end)
  if not ok then toast.Text='Game configuration failed to load. Check Output.';warn(err);return end
  Remote=remotes:WaitForChild('Request',15);local updated=remotes:WaitForChild('Updated',15);local notify=remotes:WaitForChild('Notify',15)
  if not Remote or not updated or not notify then toast.Text='Server did not finish starting. Check Output.';return end

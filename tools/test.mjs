@@ -14,6 +14,7 @@ try {
  local function require(name) if name=='NexusRoster' then return roster end;error('Unexpected dependency '..name) end
  local Config=${await load('NexusConfig')}
  local P=${await load('NexusProgression')}
+ local SummonVisual=${await load('NexusSummonVisual')}
  local Persistence=${await load('NexusPersistence')}
  local Rankings=${await load('NexusRankings')}
  local Coop=${await load('NexusCoop')}
