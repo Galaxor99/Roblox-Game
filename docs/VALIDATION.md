@@ -4,7 +4,7 @@
 
 `npm ci --ignore-scripts --cache /workspace/.npm-cache` and `npm test`.
 
-The test runner compiles all nine source files in a Luau WebAssembly runtime. It executes 53 tests covering:
+The test runner compiles all nine source files in a Luau WebAssembly runtime. It executes 54 tests covering:
 
 - Roster IDs, stats, faction/rarity validity, summon pools and restricted summon eligibility.
 - Team ownership, slot limits, synergy, levels, duplicate consumption and protected variants.
@@ -16,6 +16,7 @@ The test runner compiles all nine source files in a Luau WebAssembly runtime. It
 - Durable shared contributions across server adapters, stale-cache refresh, storage failure behavior and an atomic reward claim.
 - Session exclusivity/expiry/release, failed loads, save outages and receipt idempotency.
 - The actual `NexusServer` entry point with deterministic Roblox service adapters: profile load, summons including zero-weight boundaries, throttling, bad RPC arguments, upgrades, world travel, expeditions, boss results and persistence.
+- The unpublished Studio startup path: DataStore access fails at service initialization, the server still creates its remotes, and the player receives an unsaved test profile.
 
 The adapters do not represent a Roblox engine or real cloud storage. No visual, network-latency, live purchase, live DataStore or performance claims are made.
 

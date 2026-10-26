@@ -18,6 +18,7 @@ try {
  local Rankings=${await load('NexusRankings')}
  local Coop=${await load('NexusCoop')}
  ${await readFile(root+'tests/rules.luau','utf8')}
- ${ (await readFile(root+'tests/server.luau','utf8')).replace('-- SERVER_SOURCE_INSERT', await readFile(root+'src/NexusServer.server.luau','utf8')) }`;
+ ${ (await readFile(root+'tests/server.luau','utf8')).replace('-- SERVER_SOURCE_INSERT', await readFile(root+'src/NexusServer.server.luau','utf8')) }
+ ${ (await readFile(root+'tests/unpublished.luau','utf8')).replace('-- SECOND_SERVER_SOURCE', await readFile(root+'src/NexusServer.server.luau','utf8')) }`;
  await vm.loadstring(source,'rules',true)();
 } finally {vm.destroy();}

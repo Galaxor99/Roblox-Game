@@ -6,7 +6,11 @@ local RunService=game:GetService("RunService")
 local MarketplaceService=game:GetService("MarketplaceService")
 local PolicyService=game:GetService("PolicyService")
 local Config=require(ReplicatedStorage:WaitForChild("NexusConfig"))
-local store=DataStoreService:GetDataStore("AnimeNexusHybrid_v2")
+local storeAvailable,store=pcall(function()return DataStoreService:GetDataStore("AnimeNexusHybrid_v2")end)
+if not storeAvailable then
+ warn("ANIME NEXUS: DataStore cannot start here; Studio will use unsaved test profiles:",store)
+ store={UpdateAsync=function()error("DataStore unavailable")end}
+end
 local Progression=require(ReplicatedStorage:WaitForChild("NexusProgression")).new(Config)
 local rankingService
 local rankingOk,rankingResult=pcall(function()return require(script.Parent:WaitForChild("NexusRankings")).new(DataStoreService,Players,os.time)end)

@@ -4,7 +4,7 @@ A hybrid card collection RPG based on the supplied [original place](reference/An
 
 This repository contains the development source and a [downloadable ZIP](build/AnimeNexus_Test.zip) containing the [Roblox Studio test place](build/AnimeNexus_Test.rbxlx). The test place packages the current scripts into your original place; the original remains unchanged. This is a development milestone, not a finished or published game.
 
-Download and extract `build/AnimeNexus_Test.zip`. Open the contained `AnimeNexus_Test.rbxlx` with **Roblox Studio → File → Open from File**, then press **Play**. The world is created when the server script runs. If Studio cannot reach DataStores, the HUD labels progress as an unsaved test session. To test saving and cross-server features, use a separate published test experience with API access enabled. Follow [the Studio checklist](docs/VALIDATION.md) and share any Output errors you see.
+Download and extract `build/AnimeNexus_Test.zip`. Open the contained `AnimeNexus_Test.rbxlx` with **Roblox Studio → File → Open from File**, then press **Play**. The world is created when the server script runs. An unpublished place starts with an unsaved Studio test profile; the HUD labels that state. To test saving and cross-server features, use a separate published test experience with API access enabled. Follow [the Studio checklist](docs/VALIDATION.md) and share any Output errors you see.
 
 Regenerate the place after source changes with `python3 tools/export_place.py`. The export command checks the script inventory, script contents, unique referents and the retained baseplate before and after writing the file.
 
