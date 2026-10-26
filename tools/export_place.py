@@ -6,6 +6,7 @@ place remains unchanged, including its static Workspace objects and settings.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import zipfile
@@ -13,6 +14,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL = ROOT / 'reference/AnimeNexus_UI_Fixed_Studio_Build.original.rbxlx'
 OUTPUT = ROOT / 'build/AnimeNexus_Test.rbxlx'
+PROJECT = ROOT / 'default.project.json'
 SCRIPTS = {
     ('ReplicatedStorage', 'NexusConfig'): ('ModuleScript', 'src/NexusConfig.luau'),
     ('ReplicatedStorage', 'NexusRoster'): ('ModuleScript', 'src/NexusRoster.luau'),
@@ -38,6 +40,18 @@ def child(parent: ET.Element, child_name: str) -> ET.Element:
     return matches[0]
 
 
+def portrait_asset_ids() -> str:
+    project = json.loads(PROJECT.read_text(encoding='utf-8'))
+    value = project['tree']['ReplicatedStorage']['NexusPortraitAssets']['$properties']['Value']
+    if not isinstance(value, str):
+        raise ValueError('Portrait asset IDs must be a comma-separated string')
+    if value:
+        ids = value.split(',')
+        if len(ids) != 23 or any(not part.isdecimal() for part in ids):
+            raise ValueError('Expected exactly 23 numeric portrait asset IDs, using 0 for unavailable art')
+    return value
+
+
 def validate(root: ET.Element) -> None:
     found: set[tuple[str, str]] = set()
     referents: set[str] = set()
@@ -56,7 +70,8 @@ def validate(root: ET.Element) -> None:
     if found != set(SCRIPTS):
         raise ValueError('Script inventory does not match source manifest')
     portrait_ids = child(child(root, 'ReplicatedStorage'), 'NexusPortraitAssets')
-    if portrait_ids.get('class') != 'StringValue' or portrait_ids.find("Properties/string[@name='Value']") is None:
+    value_prop = portrait_ids.find("Properties/string[@name='Value']")
+    if portrait_ids.get('class') != 'StringValue' or value_prop is None or (value_prop.text or '') != portrait_asset_ids():
         raise ValueError('Portrait asset ID configuration is missing')
     child(child(root, 'Workspace'), 'Baseplate')
 
@@ -95,7 +110,12 @@ def build(output: Path) -> None:
         item = ET.SubElement(replicated, 'Item', {'class': 'StringValue', 'referent': 'NEXUS_PORTRAIT_IDS'})
         props = ET.SubElement(item, 'Properties')
         ET.SubElement(props, 'string', {'name': 'Name'}).text = 'NexusPortraitAssets'
-        ET.SubElement(props, 'string', {'name': 'Value'}).text = ''
+        ET.SubElement(props, 'string', {'name': 'Value'}).text = portrait_asset_ids()
+    else:
+        value_prop = portraits[0].find("Properties/string[@name='Value']")
+        if value_prop is None:
+            value_prop = ET.SubElement(portraits[0].find('Properties'), 'string', {'name': 'Value'})
+        value_prop.text = portrait_asset_ids()
     validate(root)
     output.parent.mkdir(parents=True, exist_ok=True)
     ET.indent(root)
