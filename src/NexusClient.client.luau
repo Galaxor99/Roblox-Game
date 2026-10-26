@@ -2,6 +2,7 @@
 local Players=game:GetService('Players')
 local RS=game:GetService('ReplicatedStorage')
 local TweenService=game:GetService('TweenService')
+local ContentProvider=game:GetService('ContentProvider')
 local me=Players.LocalPlayer
 local gui=Instance.new('ScreenGui');gui.Name='AnimeNexusGui';gui.ResetOnSpawn=false;gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;gui.Parent=me:WaitForChild('PlayerGui')
 local function make(class,parent,props)
@@ -32,6 +33,7 @@ close.Activated:Connect(function()main.Visible=false;toggle.Visible=true end)
 toggle.Activated:Connect(function()main.Visible=true;toggle.Visible=false end)
 local Config,Rules,Visual,Remote,state
 local portraitCount=0
+local portraitErrors=0
 local tab='Overview';local locked=false;local render;local tabButtons={};local rarityFilter='All';local confirmSalvage=nil;local timers={};local searchQuery='';local page=1;local ownedOnly=false;local rankingMetric='Power';local rankingRows={};local coopDay=math.floor(os.time()/86400);local coopStatus
 local search=make('TextBox',main,{Position=UDim2.fromOffset(12,128),Size=UDim2.new(1,-24,0,36),PlaceholderText='Search name, universe, faction or trait…',ClearTextOnFocus=false,Text='',TextColor3=palette.text,PlaceholderColor3=palette.muted,BackgroundColor3=palette.surface,Font=Enum.Font.Gotham,TextSize=14,Visible=false});corner(search,7)
 local function layout()
@@ -65,13 +67,13 @@ local function portrait(parent,id,size,x,y,z)
  local atlasId=(Config.PortraitAtlases or {})[identity.PortraitAtlas or 0] or 0
  local tile=make('Frame',parent,{Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(size,size),BackgroundColor3=c.Color,BorderSizePixel=0,ZIndex=z});corner(tile,8)
  make('UIGradient',tile,{Rotation=45,Color=ColorSequence.new(Color3.fromRGB(11,19,39),c.Color)})
- local initial=make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+1})
+ local initial=make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+3})
  if imageId>0 or (cell and atlasId>0) then
   local props={Size=UDim2.fromScale(1,1),BackgroundTransparency=1,ScaleType=Enum.ScaleType.Crop,Image='rbxassetid://'..(imageId>0 and imageId or atlasId),ZIndex=z+2}
   if imageId==0 then props.ImageRectSize=Vector2.new(418,418);props.ImageRectOffset=Vector2.new(((cell-1)%3)*418,math.floor((cell-1)/3)*418) end
   local image=make('ImageLabel',tile,props);corner(image,8)
-  image.Visible=image.IsLoaded
-  image:GetPropertyChangedSignal('IsLoaded'):Connect(function()image.Visible=image.IsLoaded;initial.Visible=not image.IsLoaded end)
+  initial.Visible=not image.IsLoaded
+  image:GetPropertyChangedSignal('IsLoaded'):Connect(function()initial.Visible=not image.IsLoaded end)
  end
  return tile
 end
@@ -254,6 +256,7 @@ render=function(reset)
  elseif tab=='Cards' then
   heading('COLLECTION • '..uniqueCount()..' discovered')
   if portraitCount==0 then text('Portrait setup: upload the PNG atlases, then paste their asset IDs into ReplicatedStorage → NexusPortraitAssets. See PORTRAIT_SETUP.md in the ZIP.',52,palette.muted) end
+  if portraitErrors>0 then text(portraitErrors..' portrait asset(s) could not load. Check Studio Output for their IDs and Roblox approval status.',42,palette.muted) end
   button('FILTER: '..rarityFilter..' • tap to cycle',function()
    local list={'All',table.unpack(Config.Rarities)};rarityFilter=list[(table.find(list,rarityFilter) or 1)%#list+1];confirmSalvage=nil;page=1;render(true)
   end)
@@ -520,6 +523,7 @@ task.spawn(function()
  if portraitIds and portraitIds:IsA('StringValue') then
   local function applyPortraitIds()
    portraitCount=0
+   portraitErrors=0
    for index=1,23 do Config.PortraitAtlases[index]=0 end
    for index,part in ipairs(string.split(portraitIds.Value,',')) do
     if index>23 then break end
@@ -527,6 +531,25 @@ task.spawn(function()
     if id and id>0 then Config.PortraitAtlases[index]=id;portraitCount+=1 end
    end
    if state and render then render() end
+   local urls={};local seen={}
+   for _,id in ipairs(Config.PortraitAtlases) do
+    if id>0 and not seen[id] then
+     seen[id]=true;table.insert(urls,'rbxassetid://'..id)
+    end
+   end
+   if #urls>0 then task.spawn(function()
+    local failed=0
+    local ok,err=pcall(function()
+     ContentProvider:PreloadAsync(urls,function(url,status)
+      if status~=Enum.AssetFetchStatus.Success then
+       failed+=1;warn('ANIME NEXUS: Portrait asset unavailable: '..url..' ('..tostring(status)..')')
+      end
+     end)
+    end)
+    if not ok then warn('ANIME NEXUS: Portrait preload failed: '..tostring(err)) end
+    portraitErrors=failed
+    if state and render then render() end
+   end) end
   end
   applyPortraitIds()
   portraitIds:GetPropertyChangedSignal('Value'):Connect(applyPortraitIds)

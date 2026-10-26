@@ -37,5 +37,6 @@ The adapters do not represent a Roblox engine or real cloud storage. No visual, 
 13. Measure performance at the intended player count and collection size. Review the first-hour economy and replace placeholder art before considering release.
 14. Open each pack and verify the reel decelerates to the exact server-awarded card, including rare variants. Tap Skip and confirm it cannot award a second card.
 15. After importing portrait atlases and configuring their Roblox image asset IDs, inspect original and fiction cards, the pack reel, and the reveal. Confirm the atlas cells line up with the intended names on desktop and mobile.
+16. If cards still show initials, check Studio Output for `Portrait asset unavailable` lines. Each line identifies an image ID that Roblox could not fetch for this experience; verify approval, ownership, and the number used in `NexusPortraitAssets.Value`.
 
 The `build/AnimeNexus_Test.rbxlx` export is a Studio test place generated from the unchanged original and current source. The cloud checks validate its XML and embedded sources; actual Studio loading and playtesting remain for the Studio checklist above.
