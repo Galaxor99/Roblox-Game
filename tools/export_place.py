@@ -55,6 +55,9 @@ def validate(root: ET.Element) -> None:
         found.add((service, script_name))
     if found != set(SCRIPTS):
         raise ValueError('Script inventory does not match source manifest')
+    portrait_ids = child(child(root, 'ReplicatedStorage'), 'NexusPortraitAssets')
+    if portrait_ids.get('class') != 'StringValue' or portrait_ids.find("Properties/string[@name='Value']") is None:
+        raise ValueError('Portrait asset ID configuration is missing')
     child(child(root, 'Workspace'), 'Baseplate')
 
 
@@ -84,6 +87,15 @@ def build(output: Path) -> None:
             ET.SubElement(props, 'bool', {'name': 'Disabled'}).text = 'false'
             source = ET.SubElement(props, 'ProtectedString', {'name': 'Source'})
         source.text = (ROOT / source_path).read_text(encoding='utf-8')
+    replicated = child(root, 'ReplicatedStorage')
+    portraits = [item for item in replicated.findall('Item') if name(item) == 'NexusPortraitAssets']
+    if len(portraits) > 1:
+        raise ValueError('Duplicate portrait asset configuration')
+    if not portraits:
+        item = ET.SubElement(replicated, 'Item', {'class': 'StringValue', 'referent': 'NEXUS_PORTRAIT_IDS'})
+        props = ET.SubElement(item, 'Properties')
+        ET.SubElement(props, 'string', {'name': 'Name'}).text = 'NexusPortraitAssets'
+        ET.SubElement(props, 'string', {'name': 'Value'}).text = ''
     validate(root)
     output.parent.mkdir(parents=True, exist_ok=True)
     ET.indent(root)
