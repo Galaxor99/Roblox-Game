@@ -1,7 +1,8 @@
-"""Package the current Luau source into the user's original Roblox XML place.
+"""Package the current Luau source into a Roblox XML place.
 
 This only rewrites Script/ModuleScript/LocalScript Source properties. The original
 place remains unchanged, including its static Workspace objects and settings.
+Use --base-place with a published Studio XML export to build from that world.
 """
 from __future__ import annotations
 
@@ -73,13 +74,15 @@ def validate(root: ET.Element) -> None:
     value_prop = portrait_ids.find("Properties/string[@name='Value']")
     if portrait_ids.get('class') != 'StringValue' or value_prop is None or (value_prop.text or '') != portrait_asset_ids():
         raise ValueError('Portrait asset ID configuration is missing')
-    child(child(root, 'Workspace'), 'Baseplate')
+    child(root, 'Workspace')
 
 
-def build(output: Path) -> None:
-    if not ORIGINAL.is_file():
-        raise FileNotFoundError(ORIGINAL)
-    root = ET.parse(ORIGINAL).getroot()
+def build(output: Path, base_place: Path = ORIGINAL) -> None:
+    if not base_place.is_file():
+        raise FileNotFoundError(base_place)
+    if base_place.resolve() == output.resolve():
+        raise ValueError('Output cannot overwrite the base place')
+    root = ET.parse(base_place).getroot()
     if root.tag != 'roblox' or root.get('version') != '4':
         raise ValueError('Expected Roblox XML place format 4')
     for index, ((service, script_name), (class_name, source_path)) in enumerate(SCRIPTS.items()):
@@ -141,5 +144,7 @@ def build(output: Path) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=OUTPUT)
+    parser.add_argument('--base-place', type=Path, default=ORIGINAL,
+                        help='Studio .rbxlx export to use as the world and settings base')
     args = parser.parse_args()
-    build(args.output)
+    build(args.output, args.base_place)

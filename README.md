@@ -4,6 +4,8 @@ A hybrid card collection RPG based on the supplied [original place](reference/An
 
 This repository contains the development source and a [downloadable ZIP](build/AnimeNexus_Test.zip) containing the [Roblox Studio test place](build/AnimeNexus_Test.rbxlx). The test place packages the current scripts into your original place; the original remains unchanged. This is a development milestone, not a finished or published game.
 
+To use the published **Nexus Test** place as the world and settings base, follow [the published-place import guide](docs/PUBLISHED_SYNC.md). The exporter accepts its XML Studio copy with `--base-place` and preserves that copy separately from the starter place.
+
 Download and extract `build/AnimeNexus_Test.zip`. Open the contained `AnimeNexus_Test.rbxlx` with **Roblox Studio → File → Open from File**, then press **Play**. The world is created when the server script runs. An unpublished place starts with an unsaved Studio test profile; the HUD labels that state. To test saving and cross-server features, use a separate published test experience with API access enabled. The ZIP includes 23 portrait atlases covering all 204 cards. The owner's first 23 supplied image IDs are baked into `NexusPortraitAssets.Value`; `PORTRAIT_SETUP.md` explains how to correct or replace them. Roblox may still show initials for unapproved or inaccessible images. Follow [the Studio checklist](docs/VALIDATION.md) and share any Output errors you see.
 
 Regenerate the place after source changes with `python3 tools/export_place.py`. The export command checks the script inventory, script contents, unique referents and the retained baseplate before and after writing the file.
