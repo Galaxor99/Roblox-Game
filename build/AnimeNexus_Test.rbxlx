@@ -1634,6 +1634,23 @@ local function portrait(parent,id,size,x,y,z)
  make('TextLabel',tile,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=string.sub(c.Name,1,1),TextColor3=palette.text,TextSize=math.floor(size*.55),Font=Enum.Font.GothamBlack,ZIndex=z+1})
  return tile
 end
+local function showOdds(packId)
+ local pack=Config.Packs[packId];local odds=state.Odds[packId] or pack.Weights
+ local cover=make('TextButton',gui,{Size=UDim2.fromScale(1,1),Text='',BackgroundColor3=Color3.fromRGB(3,7,16),BackgroundTransparency=.15,ZIndex=20})
+ local box=make('Frame',cover,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(.9,0,0,430),BackgroundColor3=palette.surface,BorderSizePixel=0,ZIndex=21});corner(box,14)
+ make('UISizeConstraint',box,{MaxSize=Vector2.new(390,430)})
+ make('UIStroke',box,{Color=palette.accent,Thickness=1})
+ make('TextLabel',box,{Position=UDim2.fromOffset(15,12),Size=UDim2.new(1,-30,0,28),Text=pack.Name:upper()..' · ODDS',TextColor3=palette.text,Font=Enum.Font.GothamBlack,TextSize=18,BackgroundTransparency=1,ZIndex=22})
+ for i,rarity in ipairs(Config.Rarities) do
+  local chance=odds[rarity] or 0
+  local y=48+(i-1)*52
+  make('TextLabel',box,{Position=UDim2.fromOffset(16,y),Size=UDim2.new(1,-32,0,22),Text=rarity..'   '..string.format('%.3f%%',chance),TextXAlignment=Enum.TextXAlignment.Left,TextColor3=Config.RarityColors[rarity],Font=Enum.Font.GothamBold,TextSize=12,BackgroundTransparency=1,ZIndex=22})
+  local base=make('Frame',box,{Position=UDim2.fromOffset(16,y+27),Size=UDim2.new(1,-32,0,8),BackgroundColor3=palette.bg,BorderSizePixel=0,ZIndex=22});corner(base,4)
+  local fill=make('Frame',base,{Size=UDim2.fromScale(math.clamp(chance/55,0,1),1),BackgroundColor3=Config.RarityColors[rarity],BorderSizePixel=0,ZIndex=23});corner(fill,4)
+ end
+ make('TextLabel',box,{Position=UDim2.fromOffset(16,365),Size=UDim2.new(1,-32,0,42),Text='Pity in '..(pack.Pity-(state.Pity[packId] or 0))..' pulls · odds reflect your current luck',TextWrapped=true,TextColor3=palette.muted,Font=Enum.Font.Gotham,TextSize=12,BackgroundTransparency=1,ZIndex=22})
+ cover.Activated:Connect(function()cover:Destroy()end)
+end
 local function request(action,arg)
  if locked or not Remote then return nil end
  locked=true
@@ -1791,16 +1808,7 @@ render=function(reset)
    local pack=Config.Packs[id];heading(pack.Name:upper()..'  ·  '..pack.Price..' COINS')
    text(pack.Description..'   •   Legendary+ pity in '..(pack.Pity-(state.Pity[id] or 0))..' pulls',40,palette.muted)
    button('✦  OPEN '..pack.Name:upper()..'     →',function()action('Open',id)end,state.Coins&gt;=pack.Price)
-   button('VIEW '..pack.Name:upper()..' ODDS',function()
-    local odds=state.Odds[id] or pack.Weights;local lines={}
-    for _,rarity in ipairs(Config.Rarities) do
-     if (odds[rarity] or 0)&gt;0 then
-      local n=0;for _,c in pairs(Config.Cards) do if c.Rarity==rarity and c.Enabled~=false then n+=1 end end
-      table.insert(lines,string.format('%s %.3f%% · each card %.3f%%',rarity,odds[rarity],odds[rarity]/n))
-     end
-    end
-    toast.Text=table.concat(lines,'   |   ')
-   end)
+   button('VIEW '..pack.Name:upper()..' ODDS',function()showOdds(id)end)
   end
  elseif tab=='Cards' then
   heading('COLLECTION • '..uniqueCount()..' discovered')
