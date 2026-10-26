@@ -21,7 +21,7 @@ The adapters do not represent a Roblox engine or real cloud storage. No visual, 
 
 ## Required Roblox Studio checks — not executed here
 
-1. Install the nine scripts under the exact paths in README. Run only one server script and one client script.
+1. Open `build/AnimeNexus_Test.rbxlx`, or install the nine scripts under the exact paths in README. Run only one server script and one client script.
 2. Press Play: verify Overview loads and the temporary/saved state label is accurate. Check Output for errors.
 3. Claim daily twice; open all three pack types; verify coin costs, displayed card odds, pity counters and reveal dismissal. Simulate the guarantee threshold in an isolated test profile.
 4. Search by universe and name, cycle rarity and owned filters, and page through the index. Test narrow phone, landscape, tablet and desktop sizes with keyboard and touch emulation.
@@ -35,4 +35,4 @@ The adapters do not represent a Roblox engine or real cloud storage. No visual, 
 12. Check global OrderedDataStore rankings in a published test place, including a storage outage and fallback. Simulate save failures and ambiguous receipt commits before enabling any products. IDs remain zero and client purchase buttons are absent.
 13. Measure performance at the intended player count and collection size. Review the first-hour economy and replace placeholder art before considering release.
 
-No new `.rbxl` or `.rbxlx` output is part of this delivery.
+The `build/AnimeNexus_Test.rbxlx` export is a Studio test place generated from the unchanged original and current source. The cloud checks validate its XML and embedded sources; actual Studio loading and playtesting remain for the Studio checklist above.
